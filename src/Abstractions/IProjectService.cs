@@ -7,6 +7,7 @@ public interface IProjectService
 {
 
     public Task<IEnumerable<ProjectReadDto>> FindAll();
+    public Task<IEnumerable<ProjectReadDto>> FindAll(int limit, int offset);
     public Task<ProjectReadDto?> FindOne(Guid id);
     public Task<ProjectReadDto?> CreateOne(ProjectCreateDto newProject);
     public Task<bool> DeleteOne(Guid id);

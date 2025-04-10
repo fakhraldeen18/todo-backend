@@ -34,6 +34,13 @@ public class ProjectRepository : IProjectRepository
         return await _projects.ToListAsync();
     }
 
+    public async Task<IEnumerable<Project>> FindAll(int limit, int offset)
+    {
+        IEnumerable<Project> projects = await _projects.ToListAsync();
+        if (limit == 0 & offset == 0) return projects;
+        return projects.Skip(offset).Take(limit);
+    }
+    
     public async Task<Project?> FindOne(Guid id)
     {
         return await _projects.FirstOrDefaultAsync(p => p.Id == id);

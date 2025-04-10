@@ -23,6 +23,13 @@ public class ProjectsController : CustomController
         IEnumerable<ProjectReadDto> projects = await _projectService.FindAll();
         return Ok(projects);
     }
+    [HttpGet("pagination")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ProjectReadDto>>> FindAll([FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
+    {
+        IEnumerable<ProjectReadDto> projects = await _projectService.FindAll(limit,offset);
+        return Ok(projects);
+    }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
