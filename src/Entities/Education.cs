@@ -14,7 +14,7 @@ public class Education
     public string Degree { get; set; }
     [Required]
     public string FieldStudy { get; set; }
-    public float? Grade { get; set; }
+    public string? Grade { get; set; }
     [Required]
     public DateTime StartDate { get; set; }
     [Required]

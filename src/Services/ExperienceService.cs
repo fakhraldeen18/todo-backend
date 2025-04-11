@@ -43,6 +43,10 @@ public class ExperienceService : IExperienceService
                                      userName = user.Name,
                                      title = experience.Title,
                                      companyName = experience.CompanyName,
+                                     description = experience.Description,
+                                     employmentType = experience.EmploymentType,
+                                     startDate = experience.StartDate,
+                                     endDate = experience.EndDate
                                  };
         return experienceWithUser;
     }
