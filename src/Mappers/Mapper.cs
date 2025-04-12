@@ -33,6 +33,8 @@ public class Mapper : Profile
         CreateMap<SkillCreateDto, Skill>();
 
         CreateMap<UserSkillCreateDto, UserSkill>();
+        CreateMap<UserSkill, UserSkillReadDto>();
+        CreateMap<UserSkillCreateRangeDto, UserSkillCreateDto>();
 
         CreateMap<UsersProjectsCreateDto, UserProject>();
     }
