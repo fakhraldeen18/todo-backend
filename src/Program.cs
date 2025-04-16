@@ -11,6 +11,7 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
 using Harkh_backend.src.Enums;
 using Harkh_backend.src.UnitOfWork;
+using Harkh_app_production.src.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,6 +109,10 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 
 builder.Services.AddScoped<IMilestoneRepository, MilestoneRepository>();
 builder.Services.AddScoped<IMilestoneService, MilestoneService>();
+
+builder.Services.AddScoped<IInvitationService, InvitationService>();
+
+builder.Services.AddScoped<IEmailSenderService, EmailSenderService>();
 
 builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

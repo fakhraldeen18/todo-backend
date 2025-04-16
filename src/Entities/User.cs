@@ -27,6 +27,7 @@ public class User
     public List<Document> Documents { get; set; }
     public List<Experience> Experiences { get; set; }
     public List<Education> Educations { get; set; }
+    public List<Invitation> Invitations { get; set; }
     public List<UserSkill> UserSkills { get; set; }
     public List<UserProject> UserProjects { get; set; }
 }
