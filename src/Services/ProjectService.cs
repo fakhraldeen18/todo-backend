@@ -73,15 +73,22 @@ public class ProjectService : IProjectService
 
     public async Task<IEnumerable<ProjectReadDto>> FindAll(int limit, int offset)
     {
-        IEnumerable<Project> projects = await _projectRepository.FindAll(limit,offset);
+        IEnumerable<Project> projects = await _projectRepository.FindAll(limit, offset);
         IEnumerable<ProjectReadDto> readProjects = _mapper.Map<IEnumerable<ProjectReadDto>>(projects);
         return readProjects;
     }
-    
+
     public async Task<IEnumerable<ProjectReadDto>> FindAll()
     {
         IEnumerable<Project> projects = await _projectRepository.FindAll();
         IEnumerable<ProjectReadDto> readProjects = _mapper.Map<IEnumerable<ProjectReadDto>>(projects);
+        return readProjects;
+    }
+
+    public async Task<ProjectFullDataDto> FindAllFullData(Guid id)
+    {
+        var projects = await _projectRepository.FindAllFullData(id);
+        ProjectFullDataDto readProjects = _mapper.Map<ProjectFullDataDto>(projects);
         return readProjects;
     }
 

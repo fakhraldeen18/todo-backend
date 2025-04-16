@@ -6,6 +6,7 @@ namespace Harkh_backend.src.Abstractions;
 public interface IMilestoneService
 {
     public Task<IEnumerable<MilestoneReadDto>> FindAll();
+    public Task<MilestoneFullDataDto> FindAllFullData(Guid id);
     public Task<MilestoneReadDto?> FindOne(Guid id);
     public Task<MilestoneReadDto?> CreateOne(MilestoneCreateDto newMilestone);
     public Task<bool> DeleteOne(Guid id);

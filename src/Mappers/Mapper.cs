@@ -15,9 +15,13 @@ public class Mapper : Profile
         CreateMap<TaskCreteDto, Entities.Task>();
 
         CreateMap<Project, ProjectReadDto>();
+        CreateMap<Project, ProjectFullDataDto>()
+            .ForMember(dest => dest.Milestones, opt => opt.MapFrom(src => src.Milestones));
         CreateMap<ProjectCreateDto, Project>();
 
         CreateMap<Milestone, MilestoneReadDto>();
+        CreateMap<Milestone, MilestoneFullDataDto>()
+            .ForMember(dest => dest.Tasks, opt => opt.MapFrom(src => src.Tasks));
         CreateMap<MilestoneCreateDto, Milestone>();
 
         CreateMap<Document, DocumentReadDto>();

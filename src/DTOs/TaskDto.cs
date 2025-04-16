@@ -74,3 +74,9 @@ public class TaskUpdatePriorityDto
     public Priority Priority { get; set; }
     public DateTime UpdateAt { get; set; } = DateTime.Now;
 }
+public class TaskUpdateMilestoneDto
+{
+    [Required]
+    public Guid? MilestoneId { get; set; }
+    public DateTime UpdateAt { get; set; } = DateTime.Now;
+}

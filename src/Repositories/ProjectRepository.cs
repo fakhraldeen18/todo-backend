@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.Databases;
 using Harkh_backend.src.Entities;
@@ -34,13 +35,21 @@ public class ProjectRepository : IProjectRepository
         return await _projects.ToListAsync();
     }
 
+    public async Task<Project?> FindAllFullData(Guid id)
+    {
+        return await _projects
+        .Include(p => p.Milestones)
+        .ThenInclude(m => m.Tasks)
+        .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<IEnumerable<Project>> FindAll(int limit, int offset)
     {
         IEnumerable<Project> projects = await _projects.ToListAsync();
         if (limit == 0 & offset == 0) return projects;
         return projects.Skip(offset).Take(limit);
     }
-    
+
     public async Task<Project?> FindOne(Guid id)
     {
         return await _projects.FirstOrDefaultAsync(p => p.Id == id);

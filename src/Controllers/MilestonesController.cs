@@ -22,6 +22,16 @@ public class MilestonesController : CustomController
         return Ok(milestones);
     }
 
+    [HttpGet("full-data/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<MilestoneFullDataDto>> FindAllFullData(Guid id)
+    {
+        MilestoneFullDataDto milestone = await _milestoneService.FindAllFullData(id);
+        if (milestone == null) return NotFound();
+        return Ok(milestone);
+    }
+
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
