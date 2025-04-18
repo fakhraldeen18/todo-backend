@@ -13,7 +13,7 @@ public class ApiKeyAttribute : Attribute, IAuthorizationFilter
     {
         var apiKey = context.HttpContext.Request.Headers[API_KEY_HEADER].FirstOrDefault();
         var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-        var validApiKey = configuration["SendGrid:ApiKey"];
+        var validApiKey = configuration["ApiKey"];
 
         if (string.IsNullOrEmpty(apiKey) || apiKey != validApiKey)
         {

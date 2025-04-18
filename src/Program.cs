@@ -46,7 +46,6 @@ builder.Services.AddSwaggerGen(
         }
         );
 
-        options.OperationFilter<SecurityRequirementsOperationFilter>();
 
         options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
         {
@@ -70,6 +69,9 @@ builder.Services.AddSwaggerGen(
             Array.Empty<string>()
         }
     });
+
+
+        options.OperationFilter<SecurityRequirementsOperationFilter>();
     }
 );
 

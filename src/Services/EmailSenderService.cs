@@ -17,11 +17,11 @@ public class EmailSenderService : IEmailSenderService
 
     public async Task<bool> SendEmailAsync(EmailSender emailRequest)
     {
-        var apiKey = _configuration["SendGrid:ApiKey"];
+        var apiKey = _configuration["ApiKey"];
         var client = new SendGridClient(apiKey);
         var from = new EmailAddress(
-            _configuration["SendGrid:FromEmail"],
-            _configuration["SendGrid:FromName"]);
+            _configuration["FromEmail"],
+            _configuration["FromName"]);
 
         var to = new EmailAddress(emailRequest.ToEmail);
         var msg = MailHelper.CreateSingleEmail(
