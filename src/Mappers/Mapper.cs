@@ -10,6 +10,7 @@ public class Mapper : Profile
     {
         CreateMap<User, UserReadDto>();
         CreateMap<UserCreateDto, User>();
+        CreateMap<UserInviteCreateDto, User>();
 
         CreateMap<Entities.Task, TaskReadDto>();
         CreateMap<TaskCreteDto, Entities.Task>();

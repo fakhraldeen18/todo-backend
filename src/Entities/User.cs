@@ -16,7 +16,7 @@ public class User
     public string Email { get; set; }
     public DateTime? BirthDate { get; set; }
     public string? Position { get; set; }
-    public string Password { get; set; }
+    public string? Password { get; set; }
     public string? Phone { get; set; }
     public string? ProfileImage { get; set; }
     public string? Nationality { get; set; }

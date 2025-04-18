@@ -111,6 +111,28 @@ public class UserService : IUserService
             return null;
         }
     }
+    public async Task<UserReadDto?> CreateInviteUser(string inviteUserEmail)
+    {
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            UserInviteCreateDto createUser = new()
+            {
+                Email = inviteUserEmail
+            };
+            User mappedUser = _mapper.Map<User>(createUser);
+            User newUser = await _userRepository.CreateOne(mappedUser);
+            UserReadDto readerUser = _mapper.Map<UserReadDto>(newUser);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return readerUser;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return null;
+        }
+    }
 
     public async Task<UserReadDto?> UpdateProfile(Guid id, UserUpdateProfileDto updatedUser)
     {
@@ -163,6 +185,27 @@ public class UserService : IUserService
         try
         {
             user.Role = updatedUser.Role;
+            _userRepository.UpdateOne(user);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return _mapper.Map<UserReadDto>(user);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return null;
+        }
+    }
+    public async Task<UserReadDto?> UpdateUserInvitePassWord(Guid id, UserInviteUpdatePassWordDto updatedUser)
+    {
+        User? user = await _userRepository.FindOne(id);
+        if (user == null) return null;
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            byte[] pepper = Encoding.UTF8.GetBytes(_config["Jwt_Pepper"]!);
+            PasswordUtils.HashPassword(updatedUser.Password, out string hashedPassword, pepper);
+            user.Password = hashedPassword;
             _userRepository.UpdateOne(user);
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();

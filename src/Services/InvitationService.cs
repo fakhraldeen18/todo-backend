@@ -13,13 +13,15 @@ public class InvitationService : IInvitationService
     private readonly IBaseRepository<Invitation> _invitationRepository;
     private readonly IMapper _mapper;
     private readonly IEmailSenderService _emailSenderService;
+    private readonly IUserService _userService;
 
-    public InvitationService(IMapper mapper, IUnitOfWork unitOfWork, IEmailSenderService emailSenderService)
+    public InvitationService(IMapper mapper, IUnitOfWork unitOfWork, IEmailSenderService emailSenderService, IUserService userService)
     {
         _unitOfWork = unitOfWork;
         _invitationRepository = _unitOfWork.Invitations;
         _mapper = mapper;
         _emailSenderService = emailSenderService;
+        _userService = userService;
     }
 
     public async Task<InvitationReadeDto?> CreateOne(InvitationDto newInvitation)
@@ -56,6 +58,7 @@ public class InvitationService : IInvitationService
         // Save to database
         await CreateOne(Invitation);
 
+        await _userService.CreateInviteUser(Invitation.ToEmail);
         // Send email
         var emailRequest = new EmailSender
         {
@@ -75,6 +78,7 @@ public class InvitationService : IInvitationService
         </ul>
         <p>Cheers,<br/>{Invitation.YourName}</p>"
         };
+
 
         return await _emailSenderService.SendEmailAsync(emailRequest);
     }
