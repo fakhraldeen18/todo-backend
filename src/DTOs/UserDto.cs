@@ -26,9 +26,13 @@ public class UserCreateDto
     public string Password { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
-
-
-
+public class UserInviteCreateDto
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+}
 public class UserLogInDto
 {
     [Required]
@@ -68,4 +72,9 @@ public class UserUpdateRoleDto
 {
     [Required]
     public Role Role { get; set; }
+}
+public class UserInviteUpdatePassWordDto
+{
+    [Required]
+    public string Password { get; set; }
 }

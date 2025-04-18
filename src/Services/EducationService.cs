@@ -49,6 +49,9 @@ public class EducationService : IEducationService
                                     degree = education.Degree,
                                     fieldStudy = education.FieldStudy,
                                     grade = education.Grade,
+                                    startDate = education.StartDate,
+                                    endDate = education.EndDate
+
                                 };
         return educationWithUser;
     }

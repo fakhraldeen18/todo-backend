@@ -11,6 +11,7 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
 using Harkh_backend.src.Enums;
 using Harkh_backend.src.UnitOfWork;
+using Harkh_app_production.src.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,31 @@ builder.Services.AddSwaggerGen(
             Scheme = "Bearer"
         }
         );
+
+
+        options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+        {
+            Description = "API Key Authentication",
+            Name = "X-Api-Key",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey
+        });
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
 
         options.OperationFilter<SecurityRequirementsOperationFilter>();
     }
@@ -108,6 +134,10 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 
 builder.Services.AddScoped<IMilestoneRepository, MilestoneRepository>();
 builder.Services.AddScoped<IMilestoneService, MilestoneService>();
+
+builder.Services.AddScoped<IInvitationService, InvitationService>();
+
+builder.Services.AddScoped<IEmailSenderService, EmailSenderService>();
 
 builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

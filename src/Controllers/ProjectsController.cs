@@ -24,6 +24,23 @@ public class ProjectsController : CustomController
         return Ok(projects);
     }
 
+    [HttpGet("full-data/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<ProjectFullDataDto>>> FindAllFullData(Guid id)
+    {
+        ProjectFullDataDto projects = await _projectService.FindAllFullData(id);
+        if (projects == null) return NotFound();
+        return Ok(projects);
+    }
+    [HttpGet("pagination")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ProjectReadDto>>> FindAll([FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
+    {
+        IEnumerable<ProjectReadDto> projects = await _projectService.FindAll(limit, offset);
+        return Ok(projects);
+    }
+
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

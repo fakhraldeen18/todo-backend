@@ -85,6 +85,19 @@ public class TasksController : CustomController
         TaskReadDto? updatedTask = await _TaskService.UpdatePriority(id, updateProgress);
         return Accepted(updatedTask);
     }
+
+    [HttpPatch("milestone/{id}")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TaskReadDto>> UpdateMilestone(Guid id, [FromBody] TaskUpdateMilestoneDto updateMilestone)
+    {
+        var findTask = await _TaskService.FindOne(id);
+        if (findTask == null) return NotFound();
+        TaskReadDto? updatedTask = await _TaskService.UpdateMilestone(id, updateMilestone);
+        return Accepted(updatedTask);
+    }
+
+
     [HttpPost("document")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

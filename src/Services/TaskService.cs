@@ -178,4 +178,35 @@ public class TaskService : ITaskService
             return null;
         }
     }
+    public async Task<TaskReadDto?> UpdateMilestone(Guid id, TaskUpdateMilestoneDto updatedMilestone)
+    {
+        Entities.Task? task = await _taskRepository.FindOne(id);
+        if (task == null) return null;
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            task.MilestoneId = updatedMilestone.MilestoneId;
+            _taskRepository.UpdateOne(task);
+            await _unitOfWork.Complete();
+            if (task.MilestoneId == null)
+            {
+                await _unitOfWork.CommitTransaction();
+                return _mapper.Map<TaskReadDto>(task);
+            }
+
+            Milestone? milestone = await _milestoneRepository.FindOne(task.MilestoneId);
+            await _milestoneRepository.UpdateProgress(milestone?.Id);
+            await _unitOfWork.Complete();
+            Project? project = await _projectRepository.FindOne(milestone!.ProjectId);
+            await _projectRepository.UpdateProgress(project!.Id);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return _mapper.Map<TaskReadDto>(task);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return null;
+        }
+    }
 }

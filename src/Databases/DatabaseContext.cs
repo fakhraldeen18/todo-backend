@@ -14,6 +14,7 @@ public class DatabaseContext : DbContext // DbContext is built in class to give 
     public DbSet<Education> Educations { get; set; }
     public DbSet<UserSkill> UserSkills { get; set; }
     public DbSet<UserProject> UserProjects { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
 
@@ -23,5 +24,8 @@ public class DatabaseContext : DbContext // DbContext is built in class to give 
         modelBuilder.HasPostgresEnum<Priority>(); // add the type Priority
         modelBuilder.HasPostgresEnum<Role>(); // add the type Role
         modelBuilder.HasPostgresEnum<ProjectStatus>(); // add the type Project status
+
+        modelBuilder.Entity<UserSkill>()
+             .HasKey(us => new { us.UserId, us.SkillId }); // composite key for UserSkill
     }
 }

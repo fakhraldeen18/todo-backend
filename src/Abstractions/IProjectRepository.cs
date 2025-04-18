@@ -4,6 +4,8 @@ namespace Harkh_backend.src.Abstractions;
 public interface IProjectRepository
 {
     public Task<IEnumerable<Project>> FindAll();
+    public Task<IEnumerable<Project>> FindAll(int limit, int offset);
+    public Task<Project?> FindAllFullData(Guid id);
     public Task<Project?> FindOne(Guid id);
     public Task<Project> CreateOne(Project newProject);
     public Project UpdateOne(Project updatedProject);

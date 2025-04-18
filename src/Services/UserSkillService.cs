@@ -24,23 +24,49 @@ public class UserSkillService : IUserSkillService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable> FindAll()
+    public async Task<IEnumerable<UserSkillReadDto>> FindAll()
     {
-        return await _userSkillRepository.FindAll();
+        var userSkills = await _userSkillRepository.FindAll();
+        return _mapper.Map<IEnumerable<UserSkillReadDto>>(userSkills);
     }
 
-    public async Task<UserSkill?> CreateOne(UserSkillCreateDto newUserSkill)
+    public async Task<UserSkillReadDto?> CreateOne(UserSkillCreateDto newUserSkill)
     {
         if (newUserSkill == null) return null;
 
         try
         {
-            var userSkill = _mapper.Map<UserSkill>(newUserSkill);
             await _unitOfWork.BeginTransaction();
+            var userSkill = _mapper.Map<UserSkill>(newUserSkill);
             await _userSkillRepository.CreateOne(userSkill);
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
-            return userSkill;
+            return _mapper.Map<UserSkillReadDto>(userSkill); ;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<UserSkillReadDto>?> CreateRange(Guid userId, IEnumerable<UserSkillCreateRangeDto> newSkills)
+    {
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            var userSkills = _mapper.Map<IEnumerable<UserSkillCreateDto>>(newSkills);
+            foreach (var skill in userSkills)
+            {
+                skill.UserId = userId; // Ensure all skills are assigned to this user
+            }
+            var createRange = _mapper.Map<IEnumerable<UserSkill>>(userSkills);
+            await _userSkillRepository.CreateRange(createRange);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return _mapper.Map<IEnumerable<UserSkillReadDto>>(createRange);
         }
         catch (Exception)
         {
@@ -80,6 +106,31 @@ public class UserSkillService : IUserSkillService
         {
             await _unitOfWork.BeginTransaction();
             _userSkillRepository.DeleteOne(isUserSkill);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return true;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteRange(Guid userId, IEnumerable<UserSkillCreateRangeDto> newSkills)
+    {
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return false;
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            var userSkills = _mapper.Map<IEnumerable<UserSkillCreateDto>>(newSkills);
+            foreach (var skill in userSkills)
+            {
+                skill.UserId = userId; // Ensure all skills are assigned to this user
+            }
+            var createRange = _mapper.Map<IEnumerable<UserSkill>>(userSkills);
+            _userSkillRepository.DeleteRange(createRange);
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
             return true;

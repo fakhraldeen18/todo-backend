@@ -14,6 +14,34 @@ public class MilestoneReadDto
     public DateTime CreateAt { get; set; }
     public DateTime UpdateAt { get; set; }
 }
+
+
+
+
+public class MilestoneFullDataDto
+{
+    public Guid Id { get; set; }
+    public Guid ProjectId { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public float Progress { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime DueDate { get; set; }
+    public DateTime CreateAt { get; set; }
+    public DateTime UpdateAt { get; set; }
+
+    public int NumberOfTasks
+    {
+        get
+        {
+            return Tasks.Count;
+        }
+    }
+
+    public ICollection<TaskReadDto> Tasks { get; set; }
+           = new List<TaskReadDto>();
+}
+
 public class MilestoneCreateDto
 {
     public Guid ProjectId { get; set; }

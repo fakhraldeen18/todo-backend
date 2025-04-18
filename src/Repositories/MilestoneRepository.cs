@@ -38,6 +38,13 @@ public class MilestoneRepository : IMilestoneRepository
         return await _milestones.ToListAsync();
     }
 
+    public async Task<Milestone?> FindAllFullData(Guid id)
+    {
+        return await _milestones
+        .Include(m => m.Tasks)
+        .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<Milestone?> FindOne(Guid? id)
     {
         return await _milestones.FirstOrDefaultAsync(m => m.Id == id);
