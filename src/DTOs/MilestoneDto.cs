@@ -76,8 +76,8 @@ public class MilestoneJoinTaskDto
     public Status Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime DueDate { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? DueDate { get; set; }
 }
 // public class MilestoneUpdateStatusDto
 // {
