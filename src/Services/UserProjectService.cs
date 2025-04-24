@@ -50,6 +50,7 @@ public class UserProjectService : IUserProjectService
                            {
                                managerName = manger.Name,
                                namOfProject = project.Name,
+                               user.Id,
                                user.Name,
                                user.ProfileImage,
                                user.Email,
@@ -75,6 +76,7 @@ public class UserProjectService : IUserProjectService
                               where user.Id == userId
                               select new
                               {
+                                  project.Id,
                                   project.Name,
                                   ManagerId = project.UserId,
                                   project.ManagerName,
@@ -86,19 +88,6 @@ public class UserProjectService : IUserProjectService
                                   project.Status,
                                   project.CreateAt,
                                   project.UpdateAt
-
-
-
-                                  // "userId": "73ef510a-e965-4ec6-923e-c15ffb2275ef",
-                                  // "name": "no files yet",
-                                  // "avatar": null,
-                                  // "description": "new",
-                                  // "progress": 0,
-                                  // "startDate": "2025-04-23T00:00:00Z",
-                                  // "endDate": "2025-04-30T00:00:00Z",
-                                  // "status": "Planning",
-                                  // "createAt": "2025-04-22T12:25:25.430792Z",
-                                  // "updateAt": "0001-01-01T00:00:00"
 
                               };
         return readUserProject;
