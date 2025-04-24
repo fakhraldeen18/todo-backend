@@ -14,17 +14,17 @@ public class ProjectService : IProjectService
     private readonly IProjectRepository _projectRepository;
     private readonly IMilestoneRepository _milestoneRepository;
     private readonly IBaseRepository<Document> _documentRepository;
-    private readonly IBaseRepository<UserProject> _userProjectRepository;
+    private readonly IUserProjectService _userProjectRepository;
 
 
-    public ProjectService(IMapper mapper, IProjectRepository projectRepository, IUnitOfWork unitOfWork, IMilestoneRepository milestoneRepository)
+    public ProjectService(IMapper mapper, IProjectRepository projectRepository, IUnitOfWork unitOfWork, IMilestoneRepository milestoneRepository, IUserProjectService userProjectRepository)
     {
         _projectRepository = projectRepository;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _milestoneRepository = milestoneRepository;
         _documentRepository = _unitOfWork.Documents;
-        _userProjectRepository = _unitOfWork.UserProjects;
+        _userProjectRepository = userProjectRepository;
     }
 
     public async Task<ProjectReadDto?> CreateOne(ProjectCreateDto newProject)
@@ -35,7 +35,7 @@ public class ProjectService : IProjectService
         try
         {
             var createdProject = await _projectRepository.CreateOne(project);
-            var newProjectUser = new UserProject
+            var newProjectUser = new UsersProjectsCreateDto
             {
                 ProjectId = createdProject.Id,
                 UserId = createdProject.UserId
@@ -107,6 +107,8 @@ public class ProjectService : IProjectService
         try
         {
             project.UserId = updatedProject.UserId;
+            project.ManagerName = updatedProject.ManagerName;
+            project.Avatar = updatedProject.Avatar;
             project.Name = updatedProject.Name;
             project.Progress = updatedProject.Progress;
             project.Description = updatedProject.Description;

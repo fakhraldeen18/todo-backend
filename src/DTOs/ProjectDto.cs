@@ -8,7 +8,10 @@ public class ProjectReadDto
     public Guid Id { get; set; }
     [Column("ManagerId")]
     public Guid UserId { get; set; }
+    public string? ManagerName { get; set; }
     public string Name { get; set; }
+    public string Avatar { get; set; }
+
     public string Description { get; set; }
     public float Progress { get; set; }
     public DateTime StartDate { get; set; }
@@ -26,7 +29,9 @@ public class ProjectFullDataDto
     public Guid Id { get; set; }
     [Column("ManagerId")]
     public Guid UserId { get; set; }
+    public string? ManagerName { get; set; }
     public string Name { get; set; }
+    public string Avatar { get; set; }
     public string Description { get; set; }
     public float Progress { get; set; }
     public DateTime StartDate { get; set; }
@@ -55,7 +60,9 @@ public class ProjectCreateDto
 {
     [Column("ManagerId")]
     public Guid UserId { get; set; }
+    public string? ManagerName { get; set; }
     public string Name { get; set; }
+    public string Avatar { get; set; }
     public string Description { get; set; }
     public float Progress { get; set; } = 0;
     public DateTime StartDate { get; set; }
@@ -68,7 +75,9 @@ public class ProjectUpdateDto
 {
     [Column("ManagerId")]
     public Guid UserId { get; set; }
+    public string? ManagerName { get; set; }
     public string Name { get; set; }
+    public string Avatar { get; set; }
     public string Description { get; set; }
     public float Progress { get; set; }
     public DateTime StartDate { get; set; }

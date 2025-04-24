@@ -95,6 +95,8 @@ public class UserService : IUserService
         await _unitOfWork.BeginTransaction();
         try
         {
+            // Convert email to lowercase
+            user.Email = user.Email.ToLower();
             byte[] pepper = Encoding.UTF8.GetBytes(_config["Jwt_Pepper"]!);
             PasswordUtils.HashPassword(user.Password, out string hashedPassword, pepper);
             user.Password = hashedPassword;
@@ -116,6 +118,8 @@ public class UserService : IUserService
         await _unitOfWork.BeginTransaction();
         try
         {
+            // Convert email to lowercase
+            inviteUserEmail = inviteUserEmail.ToLower();
             UserInviteCreateDto createUser = new()
             {
                 Email = inviteUserEmail

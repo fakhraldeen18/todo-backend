@@ -42,6 +42,7 @@ public class Mapper : Profile
         CreateMap<UserSkillCreateRangeDto, UserSkillCreateDto>();
 
         CreateMap<UsersProjectsCreateDto, UserProject>();
+        CreateMap<UserProject,UsersProjectsReadDto > ();
 
         CreateMap<InvitationDto, Invitation>();
         CreateMap<Invitation, InvitationReadeDto>();

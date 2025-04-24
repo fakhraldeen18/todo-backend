@@ -1,7 +1,6 @@
 using System.Collections;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
-using Harkh_backend.src.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Harkh_backend.src.Controllers
@@ -17,7 +16,7 @@ namespace Harkh_backend.src.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<UserProject>>> FindAll()
+        public async Task<ActionResult<IEnumerable<UsersProjectsReadDto>>> FindAll()
         {
             return Ok(await _userProjectService.FindAll());
         }
@@ -44,7 +43,7 @@ namespace Harkh_backend.src.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> CreateOne([FromBody] UsersProjectsCreateDto newUserProject)
+        public async Task<ActionResult<UsersProjectsReadDto>> CreateOne([FromBody] UsersProjectsCreateDto newUserProject)
         {
             if (newUserProject == null) return BadRequest();
             var createNewUserProject = await _userProjectService.CreateOne(newUserProject);

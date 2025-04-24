@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Runtime.Intrinsics.Arm;
 using AutoMapper;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
@@ -26,9 +25,10 @@ public class UserProjectService : IUserProjectService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<UserProject>> FindAll()
+    public async Task<IEnumerable<UsersProjectsReadDto>> FindAll()
     {
-        return await _userProjectRepository.FindAll();
+        var userProjects = await _userProjectRepository.FindAll();
+        return _mapper.Map<IEnumerable<UsersProjectsReadDto>>(userProjects);
     }
 
     public async Task<IEnumerable?> GetProjectUsers(Guid projectId)
@@ -48,9 +48,13 @@ public class UserProjectService : IUserProjectService
                            where project.Id == projectId
                            select new
                            {
-                               namOfProject = project.Name,
                                managerName = manger.Name,
-                               userName = user.Name
+                               namOfProject = project.Name,
+                               user.Name,
+                               user.ProfileImage,
+                               user.Email,
+                               user.Position,
+                               user.Role,
                            };
         return projectUsers;
 
@@ -71,14 +75,36 @@ public class UserProjectService : IUserProjectService
                               where user.Id == userId
                               select new
                               {
-                                  userName = user.Name,
-                                  namOfProject = project.Name
+                                  project.Name,
+                                  ManagerId = project.UserId,
+                                  project.ManagerName,
+                                  project.Avatar,
+                                  project.Description,
+                                  project.Progress,
+                                  project.StartDate,
+                                  project.EndDate,
+                                  project.Status,
+                                  project.CreateAt,
+                                  project.UpdateAt
+
+
+
+                                  // "userId": "73ef510a-e965-4ec6-923e-c15ffb2275ef",
+                                  // "name": "no files yet",
+                                  // "avatar": null,
+                                  // "description": "new",
+                                  // "progress": 0,
+                                  // "startDate": "2025-04-23T00:00:00Z",
+                                  // "endDate": "2025-04-30T00:00:00Z",
+                                  // "status": "Planning",
+                                  // "createAt": "2025-04-22T12:25:25.430792Z",
+                                  // "updateAt": "0001-01-01T00:00:00"
 
                               };
         return readUserProject;
     }
 
-    public async Task<UserProject?> CreateOne(UsersProjectsCreateDto newUserProject)
+    public async Task<UsersProjectsReadDto?> CreateOne(UsersProjectsCreateDto newUserProject)
     {
         if (newUserProject == null) return null;
         await _unitOfWork.BeginTransaction();
@@ -87,7 +113,8 @@ public class UserProjectService : IUserProjectService
             var createdUserProject = _mapper.Map<UserProject>(newUserProject);
             await _userProjectRepository.CreateOne(createdUserProject);
             await _unitOfWork.Complete();
-            return createdUserProject;
+            await _unitOfWork.CommitTransaction();
+            return _mapper.Map<UsersProjectsReadDto>(createdUserProject);
         }
         catch (Exception)
         {
@@ -114,4 +141,5 @@ public class UserProjectService : IUserProjectService
             return false;
         }
     }
+
 }

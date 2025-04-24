@@ -27,5 +27,8 @@ public class DatabaseContext : DbContext // DbContext is built in class to give 
 
         modelBuilder.Entity<UserSkill>()
              .HasKey(us => new { us.UserId, us.SkillId }); // composite key for UserSkill
+
+        modelBuilder.Entity<UserProject>()
+             .HasKey(us => new { us.UserId, us.ProjectId }); // composite key for UserProject
     }
 }

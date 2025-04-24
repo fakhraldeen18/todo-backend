@@ -7,10 +7,10 @@ namespace Harkh_backend.src.Abstractions;
 public interface IUserProjectService
 {
 
-    public Task<IEnumerable<UserProject>> FindAll();
+    public Task<IEnumerable<UsersProjectsReadDto>> FindAll();
     public Task<IEnumerable?> GetProjectUsers(Guid projectId);
     public Task<IEnumerable?> GetUserProjects(Guid userId);
-    public Task<UserProject?> CreateOne(UsersProjectsCreateDto newUserProject);
+    public Task<UsersProjectsReadDto?> CreateOne(UsersProjectsCreateDto newUserProject);
     public Task<bool> DeleteOne(Guid id);
 
 }
