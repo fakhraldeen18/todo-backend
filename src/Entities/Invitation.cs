@@ -5,6 +5,7 @@ public class Invitation
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
+    public Guid? ProjectId { get; set; }
     public string ToEmail { get; set; }
     public string Name { get; set; }
     public string ProjectName { get; set; }
