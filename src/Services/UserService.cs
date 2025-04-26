@@ -71,7 +71,7 @@ public class UserService : IUserService
         //Create Token 
         var claims = new[]
         {
-                new Claim(ClaimTypes.Name, isUser.Name),
+                new Claim(ClaimTypes.Name, isUser.Name ?? string.Empty), // Handle null name
                 new Claim(ClaimTypes.Role, isUser.Role.ToString()),
                 new Claim(ClaimTypes.Email, isUser.Email),
                 new Claim(ClaimTypes.NameIdentifier, isUser.Id.ToString()),
