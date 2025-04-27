@@ -80,6 +80,14 @@ public class MilestoneService : IMilestoneService
         MilestoneFullDataDto readMilestone = _mapper.Map<MilestoneFullDataDto>(milestones);
         return readMilestone;
     }
+    public async Task<IEnumerable<MilestoneFullDataDto>?> FindAllProjectMilestonesData(Guid projectId)
+    {
+        var findProject = await _projectRepository.FindOne(projectId);
+        if (findProject == null) return null;
+        var milestones = await _milestoneRepository.FindAllProjectMilestonesData(projectId);
+        return _mapper.Map<IEnumerable<MilestoneFullDataDto>>(milestones);
+
+    }
 
     public async Task<MilestoneReadDto?> FindOne(Guid id)
     {

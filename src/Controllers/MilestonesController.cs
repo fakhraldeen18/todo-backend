@@ -31,6 +31,15 @@ public class MilestonesController : CustomController
         if (milestone == null) return NotFound();
         return Ok(milestone);
     }
+    [HttpGet("project-milestones/{projectId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<MilestoneFullDataDto>> FindAllProjectMilestonesData(Guid projectId)
+    {
+        var milestone = await _milestoneService.FindAllProjectMilestonesData(projectId);
+        if (milestone == null) return NotFound();
+        return Ok(milestone);
+    }
 
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
