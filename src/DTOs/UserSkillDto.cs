@@ -19,6 +19,7 @@ public class UserSkillCreateRangeDto
 
 public class UserSkillReadDto
 {
+    public Guid Id { get; set; } 
     [Required]
     public Guid UserId { get; set; }
     [Required]

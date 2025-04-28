@@ -40,6 +40,7 @@ public class ExperienceService : IExperienceService
                                  where user.Id == userId
                                  select new
                                  {
+                                     experience.Id,
                                      userName = user.Name,
                                      title = experience.Title,
                                      companyName = experience.CompanyName,

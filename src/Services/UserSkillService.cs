@@ -90,6 +90,7 @@ public class UserSkillService : IUserSkillService
                             where user.Id == userId
                             select new
                             {
+                                userSkill.Id,
                                 name = user.Name,
                                 skillName = skill.Name
                             };

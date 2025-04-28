@@ -48,6 +48,7 @@ public class UserProjectService : IUserProjectService
                            where project.Id == projectId
                            select new
                            {
+                               UserProjectId = userProject.Id,
                                managerName = manger.Name,
                                namOfProject = project.Name,
                                user.Id,
@@ -58,10 +59,9 @@ public class UserProjectService : IUserProjectService
                                user.Role,
                            };
         return projectUsers;
-
     }
 
-    public async Task<IEnumerable?> GetUserProjects(Guid userId)
+    public async Task<IEnumerable?> GetUserProjects(Guid userId, int limit, int offset)
     {
         var findUser = await _userRepository.FindOne(userId);
         if (findUser == null) return null;
@@ -76,7 +76,8 @@ public class UserProjectService : IUserProjectService
                               where user.Id == userId
                               select new
                               {
-                                  project.Id,
+                                  UserProjectId = userProject.Id,
+                                  ProjectId = project.Id,
                                   project.Name,
                                   ManagerId = project.UserId,
                                   project.ManagerName,
@@ -87,10 +88,12 @@ public class UserProjectService : IUserProjectService
                                   project.EndDate,
                                   project.Status,
                                   project.CreateAt,
-                                  project.UpdateAt
-
+                                  project.UpdateAt,
+                                  NumberOfProjects = userProjects.Count(x => x.UserId == user.Id),
                               };
-        return readUserProject;
+        if (limit == 0 && offset == 0) return readUserProject;
+        return readUserProject.Skip(offset).Take(limit);
+
     }
 
     public async Task<UsersProjectsReadDto?> CreateOne(UsersProjectsCreateDto newUserProject)

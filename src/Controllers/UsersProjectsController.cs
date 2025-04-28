@@ -33,9 +33,9 @@ namespace Harkh_backend.src.Controllers
         [HttpGet("{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable>> GetUserProjects(Guid userId)
+        public async Task<ActionResult<IEnumerable>> GetUserProjects(Guid userId,[FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
         {
-            var result = await _userProjectService.GetUserProjects(userId);
+            var result = await _userProjectService.GetUserProjects(userId,limit, offset);
             if (result == null) return NotFound();
             return Ok(result);
         }
