@@ -16,4 +16,7 @@ public class Task
     public DateTime? StartDate { get; set; }
     public DateTime? DueDate { get; set; }
     public DateTime UpdateAt { get; set; }
+
+    // Navigation property
+    public Milestone? Milestone { get; set; }
 }

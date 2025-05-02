@@ -25,6 +25,11 @@ public class DatabaseContext : DbContext // DbContext is built in class to give 
         modelBuilder.HasPostgresEnum<Role>(); // add the type Role
         modelBuilder.HasPostgresEnum<ProjectStatus>(); // add the type Project status
 
-        
+
+        modelBuilder.Entity<Milestone>()
+    .HasMany(m => m.Tasks)
+    .WithOne(t => t.Milestone)
+    .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

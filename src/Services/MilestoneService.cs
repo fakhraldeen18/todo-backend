@@ -67,6 +67,24 @@ public class MilestoneService : IMilestoneService
             return false;
         }
     }
+    public async Task<bool> DeleteOneWithTasks(Guid id)
+    {
+        Milestone? milestone = await _milestoneRepository.FindAllFullData(id);
+        if (milestone == null) return false;
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            _milestoneRepository.DeleteOne(milestone);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return true;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return false;
+        }
+    }
 
     public async Task<IEnumerable<MilestoneReadDto>> FindAll()
     {

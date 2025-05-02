@@ -11,6 +11,7 @@ public interface IMilestoneService
     public Task<MilestoneReadDto?> FindOne(Guid id);
     public Task<MilestoneReadDto?> CreateOne(MilestoneCreateDto newMilestone);
     public Task<bool> DeleteOne(Guid id);
+    public Task<bool> DeleteOneWithTasks(Guid id);
     public Task<MilestoneReadDto?> UpdateOne(Guid id, MilestoneUpdateDto updatedMilestone);
     // public MilestoneReadDto UpdateStatus(Guid id, MilestoneUpdateStatusDto updatedStatus);
     public Task<IEnumerable<MilestoneJoinTaskDto>?> GetTasks(Guid id);

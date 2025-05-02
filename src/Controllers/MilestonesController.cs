@@ -71,6 +71,16 @@ public class MilestonesController : CustomController
         await _milestoneService.DeleteOne(id);
         return NoContent();
     }
+    [HttpDelete("withTasks/{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteOneWithTasks(Guid id)
+    {
+        var findMilestone = await _milestoneService.FindAllFullData(id);
+        if (findMilestone == null) return NotFound();
+        await _milestoneService.DeleteOneWithTasks(id);
+        return NoContent();
+    }
 
     [HttpPatch("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
