@@ -113,7 +113,7 @@ public class ProjectService : IProjectService
             project.Progress = updatedProject.Progress;
             project.Description = updatedProject.Description;
             project.StartDate = updatedProject.StartDate;
-            project.EndDate = updatedProject.EndDate;
+            project.DueDate = updatedProject.DueDate;
             project.Status = updatedProject.Status;
             project.UpdateAt = updatedProject.UpdateAt;
             _projectRepository.UpdateOne(project);

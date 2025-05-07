@@ -79,17 +79,31 @@ public class UserProjectService : IUserProjectService
                                   UserProjectId = userProject.Id,
                                   ProjectId = project.Id,
                                   project.Name,
-                                  ManagerId = project.UserId,
-                                  project.ManagerName,
+                                  Manager = users
+                                      .Where(x => x.Id == project.UserId)
+                                      .Select(x => new
+                                      {
+                                          x.Id,
+                                          x.Name,
+                                          x.ProfileImage,
+                                      }).FirstOrDefault(),
                                   project.Avatar,
                                   project.Description,
                                   project.Progress,
                                   project.StartDate,
-                                  project.EndDate,
+                                  project.DueDate,
                                   project.Status,
                                   project.CreateAt,
                                   project.UpdateAt,
                                   NumberOfProjects = userProjects.Count(x => x.UserId == user.Id),
+                                  members = userProjects
+                                      .Where(x => x.ProjectId == project.Id)
+                                      .Select(y => new
+                                      {
+                                          y.UserId,
+                                          user.Name,
+                                          user.ProfileImage,
+                                      }).ToList().Take(3),
                               };
         if (limit == 0 && offset == 0) return readUserProject;
         return readUserProject.Skip(offset).Take(limit);

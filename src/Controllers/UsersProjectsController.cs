@@ -1,12 +1,23 @@
 using System.Collections;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
 
 namespace Harkh_backend.src.Controllers
 {
     public class UsersProjectsController : CustomController
     {
+        private Guid GetUserIdFromToken()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                throw new UnauthorizedAccessException("User ID not found in token");
+
+            return Guid.Parse(userIdClaim.Value);
+        }
         private readonly IUserProjectService _userProjectService;
 
         public UsersProjectsController(IUserProjectService userProjectService)
@@ -30,12 +41,14 @@ namespace Harkh_backend.src.Controllers
             if (result == null) return NotFound();
             return Ok(result);
         }
-        [HttpGet("{userId}")]
+        [HttpGet("/api/v1/GetProjects")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable>> GetUserProjects(Guid userId,[FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
+        [Authorize(Roles = "TeamMember")]
+        public async Task<ActionResult<IEnumerable>> GetUserProjects([FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
         {
-            var result = await _userProjectService.GetUserProjects(userId,limit, offset);
+            var userId = GetUserIdFromToken();
+            var result = await _userProjectService.GetUserProjects(userId, limit, offset);
             if (result == null) return NotFound();
             return Ok(result);
         }
