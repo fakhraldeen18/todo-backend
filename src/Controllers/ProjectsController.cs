@@ -52,17 +52,6 @@ public class ProjectsController : CustomController
         return Ok(project);
     }
 
-    [HttpGet("InsightCards/{projectId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> InsightCards(Guid projectId)
-    {
-        var cards = await _userProjectService.InsightsCards(projectId);
-        if (cards == null) return NotFound();
-        return Ok(cards);
-    }
-
-
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

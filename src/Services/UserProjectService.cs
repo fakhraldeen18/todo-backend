@@ -121,6 +121,8 @@ public class UserProjectService : IUserProjectService
         var projects = await _projectRepository.FindAll();
         var users = await _userRepository.FindAll();
         var userProjects = await _userProjectRepository.FindAll();
+        var milestones = await _milestoneRepository.FindAll();
+        var tasks = await _tasksRepository.FindAll();
 
         var projectDetails = from project in projects
                              join manager in users
@@ -150,7 +152,23 @@ public class UserProjectService : IUserProjectService
                                       {
                                           x.StartDate,
                                           x.DueDate,
-                                      }).FirstOrDefault()
+                                      }).FirstOrDefault(),
+                                 cards = (from project in projects
+                                          where project.Id == projectId
+                                          let projectMilestones = milestones.Where(m => m.ProjectId == project.Id)
+                                          let milestoneTasks = projectMilestones
+                                              .SelectMany(m => tasks.Where(t => t.MilestoneId == m.Id))
+                                          select new
+                                          {
+                                              CompletedTasks = milestoneTasks.Count(t => t.Status == "done"),
+                                              RemainingTasks = milestoneTasks.Count(t => t.Status != "done"),
+                                              TotalTasks = milestoneTasks.Count()
+                                          }).DefaultIfEmpty(new
+                                          {
+                                              CompletedTasks = 0,
+                                              RemainingTasks = 0,
+                                              TotalTasks = 0
+                                          }).FirstOrDefault()
                              };
         return projectDetails.FirstOrDefault();
     }
@@ -215,19 +233,24 @@ public class UserProjectService : IUserProjectService
         var tasks = await _tasksRepository.FindAll();
 
         var cards = from project in projects
-                             join milestone in milestones
-                             on project.Id equals milestone.ProjectId
-                                join task in tasks
-                             on milestone.Id equals task.MilestoneId
-                             where project.Id == projectId
+                    join milestone in milestones
+                    on project.Id equals milestone.ProjectId
+                    join task in tasks
+                 on milestone.Id equals task.MilestoneId
+                    where project.Id == projectId
                     group task by 1 into g
-                    select new 
+                    select new
                     {
                         CompletedTasks = g.Count(t => t.Status == "done"),
                         RemainingTasks = g.Count(t => t.Status != "done"),
                         TotalTasks = g.Count()
                     };
-        return cards.FirstOrDefault();
+        return cards.DefaultIfEmpty(new
+        {
+            CompletedTasks = 0,
+            RemainingTasks = 0,
+            TotalTasks = 0
+        }).FirstOrDefault();
     }
 
 }
