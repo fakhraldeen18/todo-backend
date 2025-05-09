@@ -60,17 +60,30 @@ namespace Harkh_backend.src.Controllers
         {
             if (newUserProject == null) return BadRequest();
             var createNewUserProject = await _userProjectService.CreateOne(newUserProject);
+            if (createNewUserProject == null) return BadRequest();
             return CreatedAtAction(nameof(CreateOne), createNewUserProject);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/{projectId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> DeleteOne(Guid id)
+        public async Task<ActionResult> DeleteOne(Guid id, Guid projectId)
         {
-            var findResult = await _userProjectService.DeleteOne(id);
+            var findResult = await _userProjectService.DeleteOne(id,projectId);
             if (findResult == false) return NotFound();
             return NoContent();
+        }
+
+
+
+        [HttpGet("InsightCards/{projectId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> InsightCards(Guid projectId)
+        {
+            var cards = await _userProjectService.InsightsCards(projectId);
+            if (cards == null) return NotFound();
+            return Ok(cards);
         }
     }
 }

@@ -27,7 +27,7 @@ public class TaskService : ITaskService
     {
         Entities.Task readTask = _mapper.Map<Entities.Task>(newTask);
         if (readTask == null) return null;
-        if (readTask.Status.ToString() == "Done") readTask.Progress = 100;
+        if (readTask.Status.ToLower() == "done") readTask.Progress = 100;
         await _unitOfWork.BeginTransaction();
         try
         {
@@ -101,9 +101,8 @@ public class TaskService : ITaskService
             task.Priority = updatedTask.Priority;
             task.DueDate = updatedTask.DueDate;
             task.UpdateAt = updatedTask.UpdateAt;
-
-            if (task.Status.ToString() == "Done") task.Progress = 100;
-
+            
+            if (task.Status.ToLower() == "done") task.Progress = 100;
             _taskRepository.UpdateOne(task);
             await _unitOfWork.Complete();
             if (task.MilestoneId == null)
@@ -135,7 +134,7 @@ public class TaskService : ITaskService
         try
         {
             task.Status = updatedStatus.Status;
-            if (task.Status.ToString() == "Done") task.Progress = 100;
+            if (task.Status.ToLower() == "done") task.Progress = 100;
             _taskRepository.UpdateOne(task);
             await _unitOfWork.Complete();
             if (task.MilestoneId == null)

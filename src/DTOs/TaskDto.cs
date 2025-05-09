@@ -25,7 +25,7 @@ public class TaskCreteDto
     [Required]
     public string Title { get; set; }
     public string? Description { get; set; }
-    public Status Status { get; set; }
+    public string Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? DueDate { get; set; }
@@ -36,7 +36,7 @@ public class TaskUpdateDto
     [Required]
     public string Title { get; set; }
     public string? Description { get; set; }
-    public Status Status { get; set; }
+    public string Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? DueDate { get; set; }
@@ -46,7 +46,7 @@ public class TaskUpdateDto
 public class TaskUpdateStatusDto
 {
     [Required]
-    public Status Status { get; set; }
+    public string Status { get; set; }
     [Required]
     public DateTime UpdateAt { get; set; } = DateTime.Now;
 }

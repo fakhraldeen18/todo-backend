@@ -10,7 +10,7 @@ public class Task
     public string Title { get; set; }
     public string? Description { get; set; }
     public float Progress { get; set; } = 0;
-    public Status Status { get; set; }
+    public string Status { get; set; }
     public Priority Priority { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? StartDate { get; set; }

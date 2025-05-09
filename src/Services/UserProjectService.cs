@@ -12,16 +12,20 @@ public class UserProjectService : IUserProjectService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBaseRepository<UserProject> _userProjectRepository;
     private readonly IBaseRepository<User> _userRepository;
+    private readonly IBaseRepository<Entities.Task> _tasksRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IMilestoneRepository _milestoneRepository;
     private readonly IMapper _mapper;
 
 
-    public UserProjectService(IUnitOfWork unitOfWork, IProjectRepository projectRepository, IMapper mapper)
+    public UserProjectService(IUnitOfWork unitOfWork, IProjectRepository projectRepository, IMilestoneRepository milestoneRepository, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _userProjectRepository = _unitOfWork.UserProjects;
         _userRepository = _unitOfWork.Users;
+        _tasksRepository = _unitOfWork.Tasks;
         _projectRepository = projectRepository;
+        _milestoneRepository = milestoneRepository;
         _mapper = mapper;
     }
 
@@ -48,7 +52,6 @@ public class UserProjectService : IUserProjectService
                            where project.Id == projectId
                            select new
                            {
-                               UserProjectId = userProject.Id,
                                managerName = manger.Name,
                                namOfProject = project.Name,
                                user.Id,
@@ -76,7 +79,6 @@ public class UserProjectService : IUserProjectService
                               where user.Id == userId
                               select new
                               {
-                                  UserProjectId = userProject.Id,
                                   ProjectId = project.Id,
                                   project.Name,
                                   Manager = users
@@ -110,8 +112,57 @@ public class UserProjectService : IUserProjectService
 
     }
 
+
+    public async Task<object?> FindOne(Guid projectId)
+    {
+        var findProject = await _projectRepository.FindOne(projectId);
+        if (findProject == null) return null;
+
+        var projects = await _projectRepository.FindAll();
+        var users = await _userRepository.FindAll();
+        var userProjects = await _userProjectRepository.FindAll();
+
+        var projectDetails = from project in projects
+                             join manager in users
+                             on project.UserId equals manager.Id
+                             join userProject in userProjects
+                             on project.Id equals userProject.ProjectId
+                             where project.Id == projectId
+                             select new
+                             {
+                                 UserProjectId = userProject.Id,
+                                 ProjectId = project.Id,
+                                 project.Name,
+                                 project.Description,
+                                 project.Status,
+                                 project.Avatar,
+                                 Manager = users
+                                      .Where(x => x.Id == project.UserId)
+                                      .Select(x => new
+                                      {
+                                          x.Id,
+                                          x.Name,
+                                          x.ProfileImage,
+                                      }).FirstOrDefault(),
+                                 Date = projects
+                                      .Where(x => x.Id == project.Id)
+                                      .Select(x => new
+                                      {
+                                          x.StartDate,
+                                          x.DueDate,
+                                      }).FirstOrDefault()
+                             };
+        return projectDetails.FirstOrDefault();
+    }
+
     public async Task<UsersProjectsReadDto?> CreateOne(UsersProjectsCreateDto newUserProject)
     {
+        if (newUserProject.UserId == Guid.Empty || newUserProject.ProjectId == Guid.Empty) return null;
+        var userProjects = await _userProjectRepository.FindAll();
+        var findUserProject = userProjects
+            .Where(x => x.UserId == newUserProject.UserId && x.ProjectId == newUserProject.ProjectId)
+            .ToList().FirstOrDefault();
+        if (findUserProject != null) return null;
         if (newUserProject == null) return null;
         await _unitOfWork.BeginTransaction();
         try
@@ -129,9 +180,15 @@ public class UserProjectService : IUserProjectService
         }
     }
 
-    public async Task<bool> DeleteOne(Guid id)
+    public async Task<bool> DeleteOne(Guid id, Guid projectId)
     {
-        var result = await _userProjectRepository.FindOne(id);
+        if (id == Guid.Empty || projectId == Guid.Empty) return false;
+        var userProjects = await _userProjectRepository.FindAll();
+        var findUserProject = userProjects
+            .Where(x => x.UserId == id && x.ProjectId == projectId)
+            .ToList().FirstOrDefault();
+        if (findUserProject == null) return false;
+        var result = await _userProjectRepository.FindOne(findUserProject.Id);
         if (result == null) return false;
         await _unitOfWork.BeginTransaction();
         try
@@ -146,6 +203,31 @@ public class UserProjectService : IUserProjectService
             await _unitOfWork.RollbackTransaction();
             return false;
         }
+    }
+
+    public async Task<object?> InsightsCards(Guid projectId)
+    {
+        var findProject = await _projectRepository.FindOne(projectId);
+        if (findProject == null) return null;
+
+        var projects = await _projectRepository.FindAll();
+        var milestones = await _milestoneRepository.FindAll();
+        var tasks = await _tasksRepository.FindAll();
+
+        var cards = from project in projects
+                             join milestone in milestones
+                             on project.Id equals milestone.ProjectId
+                                join task in tasks
+                             on milestone.Id equals task.MilestoneId
+                             where project.Id == projectId
+                    group task by 1 into g
+                    select new 
+                    {
+                        CompletedTasks = g.Count(t => t.Status == "done"),
+                        RemainingTasks = g.Count(t => t.Status != "done"),
+                        TotalTasks = g.Count()
+                    };
+        return cards.FirstOrDefault();
     }
 
 }
