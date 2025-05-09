@@ -39,6 +39,15 @@ public class UsersController : CustomController
         UserReadDto? createdUser = await _userService.SignUp(newUser);
         return CreatedAtAction(nameof(SignUp), createdUser);
     }
+    [HttpPost("invitationUser")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserReadDto>> CreateInviteUser([FromBody] UserInviteEmailDto Email)
+    {
+        if (Email == null) return BadRequest();
+        UserReadDto? createdUser = await _userService.CreateInviteUser(Email.Email);
+        return CreatedAtAction(nameof(SignUp), createdUser);
+    }
 
     [HttpPost("logIn")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -168,7 +168,13 @@ public class UserProjectService : IUserProjectService
                                               CompletedTasks = 0,
                                               RemainingTasks = 0,
                                               TotalTasks = 0
-                                          }).FirstOrDefault()
+                                          }).FirstOrDefault(),
+                                    NumberOfMembers = userProjects
+                                      .Where(x => x.ProjectId == project.Id)
+                                      .Select(y => new
+                                      {
+                                          y.UserId
+                                      }).ToList().Count,
                              };
         return projectDetails.FirstOrDefault();
     }
@@ -250,6 +256,30 @@ public class UserProjectService : IUserProjectService
             CompletedTasks = 0,
             RemainingTasks = 0,
             TotalTasks = 0
+        }).FirstOrDefault();
+    }
+    public async Task<object?> NumberOfProject(Guid userId)
+    {
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+
+        var projects = await _projectRepository.FindAll();
+        var users = await _userRepository.FindAll();
+        var userProjects = await _userProjectRepository.FindAll();
+
+        var noProjects = from userProject in userProjects
+                    join user in users
+                    on userProject.UserId equals user.Id
+                    join project in projects
+                    on userProject.ProjectId equals project.Id
+                    where user.Id == userId
+                    select new
+                    {
+                        NumberOfProjects = userProjects.Count(x => x.UserId == user.Id)
+                    };
+        return noProjects.DefaultIfEmpty(new
+        {
+            NumberOfProjects = 0,
         }).FirstOrDefault();
     }
 

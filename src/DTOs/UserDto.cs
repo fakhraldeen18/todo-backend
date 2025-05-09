@@ -76,3 +76,8 @@ public class UserInviteUpdatePassWordDto
     [Required]
     public string Password { get; set; }
 }
+public class UserInviteEmailDto
+{
+    [Required]
+    public string Email { get; set; }
+}

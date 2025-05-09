@@ -57,15 +57,23 @@ public class InvitationService : IInvitationService
     public async Task<bool> ProcessInvitationAsync(InvitationDto Invitation)
     {
 
-        // Save to database
-        await CreateOne(Invitation);
         var newUser = await _userService.CreateInviteUser(Invitation.ToEmail);
+        // string guidString = Invitation.ProjectLink.Split('/').Last();
+        // Guid invitationGuid;
+        // if (!Guid.TryParse(guidString, out invitationGuid))
+        // {
+        //     throw new ArgumentException("Invalid invitation link format");
+        // }
         var newProjectUser = new UsersProjectsCreateDto
         {
             ProjectId = Invitation.ProjectId,
             UserId = newUser!.Id
         };
         await _userProjectRepository.CreateOne(newProjectUser);
+
+        // Save to database
+        Invitation.ProjectLink = $"http://localhost:3000/invitation/{newUser.Id}";
+        await CreateOne(Invitation);
         
         // Send email
         var emailRequest = new EmailSender

@@ -41,13 +41,11 @@ namespace Harkh_backend.src.Controllers
             if (result == null) return NotFound();
             return Ok(result);
         }
-        [HttpGet("/api/v1/GetProjects")]
+        [HttpGet("/api/v1/GetProjects/{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Roles = "TeamMember")]
-        public async Task<ActionResult<IEnumerable>> GetUserProjects([FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
+        public async Task<ActionResult<IEnumerable>> GetUserProjects(Guid userId, [FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
         {
-            var userId = GetUserIdFromToken();
             var result = await _userProjectService.GetUserProjects(userId, limit, offset);
             if (result == null) return NotFound();
             return Ok(result);
@@ -84,6 +82,15 @@ namespace Harkh_backend.src.Controllers
             var cards = await _userProjectService.InsightsCards(projectId);
             if (cards == null) return NotFound();
             return Ok(cards);
+        }
+        [HttpGet("NumberOfProjects/{userId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> NumberOfProject(Guid userId)
+        {
+            var noProjects = await _userProjectService.NumberOfProject(userId);
+            if (noProjects == null) return NotFound();
+            return Ok(noProjects);
         }
     }
 }
