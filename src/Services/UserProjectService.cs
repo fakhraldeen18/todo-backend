@@ -79,7 +79,7 @@ public class UserProjectService : IUserProjectService
                               where user.Id == userId
                               select new
                               {
-                                  ProjectId = project.Id,
+                                  project.Id,
                                   project.Name,
                                   Manager = users
                                       .Where(x => x.Id == project.UserId)
@@ -97,15 +97,24 @@ public class UserProjectService : IUserProjectService
                                   project.Status,
                                   project.CreateAt,
                                   project.UpdateAt,
-                                  NumberOfProjects = userProjects.Count(x => x.UserId == user.Id),
-                                  members = userProjects
+                                  NumberOfProjects = !userProjects.Any(x => x.UserId == user.Id) ? 0 : userProjects.Count(x => x.UserId == user.Id),
+                                  NumberOfMembers = userProjects
                                       .Where(x => x.ProjectId == project.Id)
                                       .Select(y => new
                                       {
-                                          y.UserId,
-                                          user.Name,
-                                          user.ProfileImage,
-                                      }).ToList().Take(3),
+                                          y.UserId
+                                      }).ToList().Count,
+                                  members = (
+                                        from userProject in userProjects
+                                        join user in users
+                                        on userProject.UserId equals user.Id
+                                        where userProject.ProjectId == project.Id
+                                        select new
+                                        {
+                                            user.Id,
+                                            user.Name,
+                                            user.ProfileImage,
+                                        }).ToList().Take(3)
                               };
         if (limit == 0 && offset == 0) return readUserProject;
         return readUserProject.Skip(offset).Take(limit);
@@ -133,7 +142,7 @@ public class UserProjectService : IUserProjectService
                              select new
                              {
                                  UserProjectId = userProject.Id,
-                                 ProjectId = project.Id,
+                                 project.Id,
                                  project.Name,
                                  project.Description,
                                  project.Status,
@@ -168,13 +177,7 @@ public class UserProjectService : IUserProjectService
                                               CompletedTasks = 0,
                                               RemainingTasks = 0,
                                               TotalTasks = 0
-                                          }).FirstOrDefault(),
-                                    NumberOfMembers = userProjects
-                                      .Where(x => x.ProjectId == project.Id)
-                                      .Select(y => new
-                                      {
-                                          y.UserId
-                                      }).ToList().Count,
+                                          }).FirstOrDefault()
                              };
         return projectDetails.FirstOrDefault();
     }
@@ -268,18 +271,18 @@ public class UserProjectService : IUserProjectService
         var userProjects = await _userProjectRepository.FindAll();
 
         var noProjects = from userProject in userProjects
-                    join user in users
-                    on userProject.UserId equals user.Id
-                    join project in projects
-                    on userProject.ProjectId equals project.Id
-                    where user.Id == userId
-                    select new
-                    {
-                        NumberOfProjects = userProjects.Count(x => x.UserId == user.Id)
-                    };
+                         join user in users
+                         on userProject.UserId equals user.Id
+                         join project in projects
+                         on userProject.ProjectId equals project.Id
+                         where user.Id == userId
+                         select new
+                         {
+                             NumberOfProjects = userProjects.Count(x => x.UserId == user.Id) == 0 ? 0 : userProjects.Count(x => x.UserId == user.Id)
+                         };
         return noProjects.DefaultIfEmpty(new
         {
-            NumberOfProjects = 0,
+            NumberOfProjects = 0
         }).FirstOrDefault();
     }
 
