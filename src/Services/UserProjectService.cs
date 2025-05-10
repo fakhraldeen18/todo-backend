@@ -103,18 +103,7 @@ public class UserProjectService : IUserProjectService
                                       .Select(y => new
                                       {
                                           y.UserId
-                                      }).ToList().Count,
-                                  members = (
-                                        from userProject in userProjects
-                                        join user in users
-                                        on userProject.UserId equals user.Id
-                                        where userProject.ProjectId == project.Id
-                                        select new
-                                        {
-                                            user.Id,
-                                            user.Name,
-                                            user.ProfileImage,
-                                        }).ToList().Take(3)
+                                      }).ToList().Count
                               };
         if (limit == 0 && offset == 0) return readUserProject;
         return readUserProject.Skip(offset).Take(limit);
@@ -161,25 +150,71 @@ public class UserProjectService : IUserProjectService
                                       {
                                           x.StartDate,
                                           x.DueDate,
-                                      }).FirstOrDefault(),
-                                 cards = (from project in projects
+                                      }).FirstOrDefault()
+                             };
+        var info = projectDetails.FirstOrDefault();
+        if (info == null) return null;
+
+        var findProjectDetail = from project in projects
+                                join manager in users
+                                on project.UserId equals manager.Id
+                                join userProject in userProjects
+                                on project.Id equals userProject.ProjectId
+                                where project.Id == projectId
+                                select new
+                                {
+                                    project.Id,
+                                    info,
+                                    members = (
+                                              from userProject in userProjects
+                                              join user in users
+                                              on userProject.UserId equals user.Id
+                                              where userProject.ProjectId == project.Id
+                                              select new
+                                              {
+                                                  user.Id,
+                                                  user.Name,
+                                                  user.ProfileImage,
+                                              }).ToList(),
+                                    insightsCards = (from project in projects
+                                                     where project.Id == projectId
+                                                     let projectMilestones = milestones.Where(m => m.ProjectId == project.Id)
+                                                     let milestoneTasks = projectMilestones
+                                                         .SelectMany(m => tasks.Where(t => t.MilestoneId == m.Id))
+                                                     select new
+                                                     {
+                                                         CompletedTasks = milestoneTasks.Count(t => t.Status == "done"),
+                                                         RemainingTasks = milestoneTasks.Count(t => t.Status != "done"),
+                                                         TotalTasks = milestoneTasks.Count()
+                                                     }).DefaultIfEmpty(new
+                                                     {
+                                                         CompletedTasks = 0,
+                                                         RemainingTasks = 0,
+                                                         TotalTasks = 0
+                                                     }).FirstOrDefault(),
+                                    tasks = (
+                                          from project in projects
+                                          join milestone in milestones
+                                          on project.Id equals milestone.ProjectId
+                                          join task in tasks
+                                          on milestone.Id equals task.MilestoneId
                                           where project.Id == projectId
-                                          let projectMilestones = milestones.Where(m => m.ProjectId == project.Id)
-                                          let milestoneTasks = projectMilestones
-                                              .SelectMany(m => tasks.Where(t => t.MilestoneId == m.Id))
                                           select new
                                           {
-                                              CompletedTasks = milestoneTasks.Count(t => t.Status == "done"),
-                                              RemainingTasks = milestoneTasks.Count(t => t.Status != "done"),
-                                              TotalTasks = milestoneTasks.Count()
-                                          }).DefaultIfEmpty(new
-                                          {
-                                              CompletedTasks = 0,
-                                              RemainingTasks = 0,
-                                              TotalTasks = 0
-                                          }).FirstOrDefault()
-                             };
-        return projectDetails.FirstOrDefault();
+                                              task.Id,
+                                              task.Title,
+                                              assignee = users
+                                                  .Where(x => x.Id == task.UserId)
+                                                  .Select(x => new
+                                                  {
+                                                      x.Id,
+                                                      x.Name,
+                                                      x.ProfileImage,
+                                                  }).FirstOrDefault(),
+                                          })
+                                };
+
+        return findProjectDetail.FirstOrDefault();
     }
 
     public async Task<UsersProjectsReadDto?> CreateOne(UsersProjectsCreateDto newUserProject)
