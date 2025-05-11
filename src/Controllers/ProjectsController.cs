@@ -106,7 +106,18 @@ public class ProjectsController : CustomController
         return NoContent();
     }
 
-     [HttpGet("NumberOfProjects/{userId}")]
+    [HttpGet("milestones/{projectId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<ProjectJoinMilestoneDto>>> GetAllMilestones(Guid projectId)
+    {
+        var findProject = await _projectService.FindOne(projectId);
+        if (findProject == null) return NotFound();
+        var milestones = await _projectService.GetMilestones(projectId);
+        return Ok(milestones);
+    }
+
+    [HttpGet("NumberOfProjects/{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> NumberOfProject(Guid userId)

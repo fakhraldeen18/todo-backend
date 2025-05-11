@@ -136,14 +136,18 @@ public class UserProjectService : IUserProjectService
                                  project.Description,
                                  project.Status,
                                  project.Avatar,
-                                 Manager = users
-                                      .Where(x => x.Id == project.UserId)
-                                      .Select(x => new
-                                      {
-                                          x.Id,
-                                          x.Name,
-                                          x.ProfileImage,
-                                      }).FirstOrDefault(),
+                                 Manager = (from project in projects
+                                            join manager in users
+                                            on project.UserId equals manager.Id
+                                            join userProject in userProjects
+                                            on project.Id equals userProject.ProjectId
+                                            where project.Id == projectId
+                                            select new
+                                            {
+                                                manager.Id,
+                                                manager.Name,
+                                                manager.ProfileImage,
+                                            }).FirstOrDefault(),
                                  Date = projects
                                       .Where(x => x.Id == project.Id)
                                       .Select(x => new
@@ -175,7 +179,7 @@ public class UserProjectService : IUserProjectService
                                                   user.Id,
                                                   user.Name,
                                                   user.ProfileImage,
-                                              }).ToList(),
+                                              }).ToList().Take(3),
                                     insightsCards = (from project in projects
                                                      where project.Id == projectId
                                                      let projectMilestones = milestones.Where(m => m.ProjectId == project.Id)

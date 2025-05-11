@@ -41,7 +41,7 @@ public class ProjectService : IProjectService
                 UserId = createdProject.UserId
             };
             var userProject = _mapper.Map<UserProject>(newProjectUser);
-           await _userProjectRepository.CreateOne(userProject);
+            await _userProjectRepository.CreateOne(userProject);
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
             return _mapper.Map<ProjectReadDto>(project);
@@ -182,6 +182,7 @@ public class ProjectService : IProjectService
                                 where project.Id == id
                                 select new ProjectJoinMilestoneDto
                                 {
+                                    Id = milestone.Id,
                                     Name = milestone.Name,
                                     Description = milestone.Description,
                                     Progress = milestone.Progress,
