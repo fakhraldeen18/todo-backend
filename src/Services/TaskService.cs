@@ -1,3 +1,4 @@
+using System.Collections;
 using AutoMapper;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
@@ -10,6 +11,7 @@ public class TaskService : ITaskService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBaseRepository<Entities.Task> _taskRepository;
+    private readonly IBaseRepository<User> _userRepository;
     private readonly IMilestoneRepository _milestoneRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IMapper _mapper;
@@ -18,6 +20,7 @@ public class TaskService : ITaskService
     {
         _unitOfWork = unitOfWork;
         _taskRepository = _unitOfWork.Tasks;
+        _userRepository = _unitOfWork.Users;
         _milestoneRepository = milestoneRepository;
         _mapper = mapper;
         _projectRepository = projectRepository;
@@ -207,5 +210,15 @@ public class TaskService : ITaskService
             await _unitOfWork.RollbackTransaction();
             return null;
         }
+    }
+
+    public async Task<IEnumerable?> GetUserTasks(Guid userId)
+    {
+
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+        var tasks = await _taskRepository.FindAll();
+        var userTask = tasks.Where(x => x.UserId == userId);
+        return userTask;
     }
 }

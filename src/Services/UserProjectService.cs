@@ -81,14 +81,16 @@ public class UserProjectService : IUserProjectService
                               {
                                   project.Id,
                                   project.Name,
-                                  Manager = users
-                                      .Where(x => x.Id == project.UserId)
-                                      .Select(x => new
-                                      {
-                                          x.Id,
-                                          x.Name,
-                                          x.ProfileImage,
-                                      }).FirstOrDefault(),
+                                  Manager = (from project in projects
+                                             join manager in users
+                                             on project.UserId equals manager.Id
+                                             where project.Id == userId
+                                             select new
+                                             {
+                                                 manager.Id,
+                                                 manager.Name,
+                                                 manager.ProfileImage,
+                                             }).FirstOrDefault(),
                                   project.Avatar,
                                   project.Description,
                                   project.Progress,
@@ -139,8 +141,6 @@ public class UserProjectService : IUserProjectService
                                  Manager = (from project in projects
                                             join manager in users
                                             on project.UserId equals manager.Id
-                                            join userProject in userProjects
-                                            on project.Id equals userProject.ProjectId
                                             where project.Id == projectId
                                             select new
                                             {

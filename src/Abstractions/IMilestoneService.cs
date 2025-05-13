@@ -9,6 +9,8 @@ public interface IMilestoneService
     public Task<MilestoneFullDataDto> FindAllFullData(Guid id);
     public Task<IEnumerable<MilestoneFullDataDto>?> FindAllProjectMilestonesData(Guid projectId);
     public Task<MilestoneReadDto?> FindOne(Guid id);
+    public Task<IEnumerable?> GetUserMilestones(Guid userId);
+    public Task<IEnumerable?> GetUserMilestoneWithTasks(Guid userId);
     public Task<MilestoneReadDto?> CreateOne(MilestoneCreateDto newMilestone);
     public Task<bool> DeleteOne(Guid id);
     public Task<bool> DeleteOneWithTasks(Guid id);

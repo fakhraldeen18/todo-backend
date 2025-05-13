@@ -50,6 +50,24 @@ public class MilestonesController : CustomController
         if (findMilestone == null) return NotFound();
         return Ok(findMilestone);
     }
+    [HttpGet("user/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GetUserMilestones(Guid userId)
+    {
+        var findUserMilestones = await _milestoneService.GetUserMilestones(userId);
+        if (findUserMilestones == null) return NotFound();
+        return Ok(findUserMilestones);
+    }
+    [HttpGet("withUserTask/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<MilestoneReadDto>> GetUserMilestoneWithTasks(Guid userId)
+    {
+        var findUserMilestones = await _milestoneService.GetUserMilestoneWithTasks(userId);
+        if (findUserMilestones == null) return NotFound();
+        return Ok(findUserMilestones);
+    }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
