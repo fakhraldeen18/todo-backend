@@ -44,12 +44,9 @@ public class UserLogInDto
 
 public class UserUpdateProfileDto
 {
-    [Required]
-    public string Name { get; set; }
-    [Required]
-    public string Position { get; set; }
-    [Required]
-    public string ProfileImage { get; set; }
+    public string? Name { get; set; }
+    public string? Position { get; set; }
+    public string? ProfileImage { get; set; }
 }
 
 
