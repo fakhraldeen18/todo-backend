@@ -98,13 +98,15 @@ public class TaskService : ITaskService
         await _unitOfWork.BeginTransaction();
         try
         {
+            task.UserId = updatedTask.UserId;
+            task.MilestoneId = updatedTask.MilestoneId;
             task.Title = updatedTask.Title;
             task.Description = updatedTask.Description;
             task.Status = updatedTask.Status;
             task.Priority = updatedTask.Priority;
             task.DueDate = updatedTask.DueDate;
             task.UpdateAt = updatedTask.UpdateAt;
-            
+
             if (task.Status.ToLower() == "done") task.Progress = 100;
             _taskRepository.UpdateOne(task);
             await _unitOfWork.Complete();
@@ -219,6 +221,37 @@ public class TaskService : ITaskService
         if (findUser == null) return null;
         var tasks = await _taskRepository.FindAll();
         var userTask = tasks.Where(x => x.UserId == userId);
+        return userTask;
+    }
+    public async Task<IEnumerable?> GetUserTasksFullData(Guid userId)
+    {
+
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+
+        var tasks = await _taskRepository.FindAll();
+        var users = await _userRepository.FindAll();
+
+        var userTask = from task in tasks
+                       join user in users on task.UserId equals user.Id
+                       where task.UserId == userId
+                       select new
+                       {
+                           task.Id,
+                           task.Title,
+                           Assignee = new
+                           {
+                               user.Id,
+                               user.Name,
+                               user.ProfileImage
+                           },
+                           task.Description,
+                           task.Priority,
+                           task.Status,
+                           task.MilestoneId,
+                           task.StartDate,
+                           task.DueDate
+                       };
         return userTask;
     }
 }

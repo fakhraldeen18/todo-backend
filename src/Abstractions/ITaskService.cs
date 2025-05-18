@@ -8,6 +8,7 @@ public interface ITaskService
     public Task<IEnumerable<TaskReadDto>> FindAll();
     public Task<TaskReadDto?> FindOne(Guid id);
     public Task<IEnumerable?> GetUserTasks(Guid userId);
+    public Task<IEnumerable?> GetUserTasksFullData(Guid userId);
     public Task<TaskReadDto?> CreateOne(TaskCreteDto newTask);
     public Task<bool> DeleteOne(Guid id);
     public Task<TaskReadDto?> UpdateOne(Guid id, TaskUpdateDto updatedTask);

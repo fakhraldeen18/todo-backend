@@ -125,7 +125,9 @@ public class MilestoneService : IMilestoneService
         {
             milestone.ProjectId = updatedMilestone.ProjectId;
             milestone.Name = updatedMilestone.Name;
+            milestone.Description = updatedMilestone.Description;
             milestone.Progress = updatedMilestone.Progress;
+            milestone.StartDate = updatedMilestone.StartDate;
             milestone.DueDate = updatedMilestone.DueDate;
             _milestoneRepository.UpdateOne(milestone);
             await _unitOfWork.Complete();

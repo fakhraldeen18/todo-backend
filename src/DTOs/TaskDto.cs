@@ -26,18 +26,20 @@ public class TaskCreteDto
     public string Title { get; set; }
     public string? Description { get; set; }
     public string Status { get; set; }
-    public Priority Priority { get; set; }
+    public string Priority { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? DueDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
 public class TaskUpdateDto
 {
+    public Guid UserId { get; set; }
+    public Guid MilestoneId { get; set; }
     [Required]
     public string Title { get; set; }
     public string? Description { get; set; }
-    public string Status { get; set; }
-    public Priority Priority { get; set; }
+    public string? Status { get; set; }
+    public string? Priority { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? DueDate { get; set; }
     [Required]
@@ -53,7 +55,7 @@ public class TaskUpdateStatusDto
 public class TaskUpdatePriorityDto
 {
     [Required]
-    public Priority Priority { get; set; }
+    public string Priority { get; set; }
     public DateTime UpdateAt { get; set; } = DateTime.Now;
 }
 public class TaskUpdateMilestoneDto

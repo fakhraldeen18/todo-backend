@@ -43,6 +43,15 @@ public class TasksController : CustomController
         if (findTask == null) return NotFound();
         return Ok(findTask);
     }
+    [HttpGet("user/full-data/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable>> GetUserTasksFullData(Guid userId)
+    {
+        var findTask = await _TaskService.GetUserTasksFullData(userId);
+        if (findTask == null) return NotFound();
+        return Ok(findTask);
+    }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
