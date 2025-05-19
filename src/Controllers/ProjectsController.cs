@@ -97,7 +97,7 @@ public class ProjectsController : CustomController
     [HttpDelete("{projectId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "ProjectManager,Admin")]
+    [Authorize]
     public async Task<ActionResult> DeleteOne(Guid projectId)
     {
         ProjectReadDto? findProject = await _projectService.FindOne(projectId);
@@ -129,7 +129,7 @@ public class ProjectsController : CustomController
     [HttpDelete("member/{memberId}/{projectId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "ProjectManager,Admin")]
+    [Authorize]
     public async Task<ActionResult> DeleteOne(Guid memberId, Guid projectId)
     {
         var findResult = await _userProjectService.DeleteOne(memberId, projectId);
