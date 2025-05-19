@@ -205,6 +205,8 @@ public class UserProjectService : IUserProjectService
                                           where project.Id == projectId
                                           select new
                                           {
+                                              task.MilestoneId,
+                                              milestoneName=milestone.Name,
                                               task.Id,
                                               task.Title,
                                               assignee = users
@@ -215,6 +217,11 @@ public class UserProjectService : IUserProjectService
                                                       x.Name,
                                                       x.ProfileImage,
                                                   }).FirstOrDefault(),
+                                              task.Description,
+                                              task.Priority,
+                                              task.Status,
+                                              task.StartDate,
+                                              task.DueDate
                                           })
                                 };
 
