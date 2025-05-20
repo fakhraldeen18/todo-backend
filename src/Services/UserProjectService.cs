@@ -205,8 +205,16 @@ public class UserProjectService : IUserProjectService
                                           where project.Id == projectId
                                           select new
                                           {
-                                              task.MilestoneId,
-                                              milestoneName=milestone.Name,
+                                              milestone = (
+                                                    from milestone in milestones
+                                                    join instantTask in tasks
+                                                    on milestone.Id equals task.MilestoneId
+                                                    where milestone.Id == task.MilestoneId
+                                                    select new
+                                                    {
+                                                        milestone.Id,
+                                                        milestone.Name,
+                                                    }).FirstOrDefault(),
                                               task.Id,
                                               task.Title,
                                               assignee = users
