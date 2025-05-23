@@ -62,6 +62,7 @@ public class UserService : IUserService
     public async Task<string?> Login(UserLogInDto user)
     {
         IEnumerable<User>? users = await _userRepository.FindAll();
+        user.Email = user.Email.ToLower();
         User? isUser = users.FirstOrDefault(u => u.Email == user.Email);
         if (isUser == null) return null;
         byte[] pepper = Encoding.UTF8.GetBytes(_config["Jwt_Pepper"]!);
