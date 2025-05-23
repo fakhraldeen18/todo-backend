@@ -60,7 +60,6 @@ public class ProjectCreateDto
 {
     [Column("ManagerId")]
     public Guid UserId { get; set; }
-    public string? ManagerName { get; set; }
     public string Name { get; set; }
     public string? Avatar { get; set; }
     public string? Description { get; set; }

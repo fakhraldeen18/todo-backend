@@ -81,10 +81,10 @@ public class UserProjectService : IUserProjectService
                               {
                                   project.Id,
                                   project.Name,
-                                  Manager = (from project in projects
+                                  Manager = (from instantProject in projects
                                              join manager in users
                                              on project.UserId equals manager.Id
-                                             where project.Id == userId
+                                             where project.Id == instantProject.Id
                                              select new
                                              {
                                                  manager.Id,

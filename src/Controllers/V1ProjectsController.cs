@@ -44,11 +44,11 @@ public class V1ProjectsController : CustomController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProjectReadDto>> CreateOne([FromBody] ProjectCreateDto newProject)
+    public async Task<ActionResult> CreateOneProject([FromBody] ProjectCreateDto newProject)
     {
         if (newProject == null) return BadRequest();
-        ProjectReadDto? caretProject = await _projectService.CreateOne(newProject);
-        return CreatedAtAction(nameof(CreateOne), caretProject);
+        var caretProject = await _projectService.CreateOneProject(newProject);
+        return CreatedAtAction(nameof(CreateOneProject), caretProject);
     }
 
 
