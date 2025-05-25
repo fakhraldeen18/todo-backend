@@ -89,6 +89,7 @@ public class UserProjectService : IUserProjectService
                                              {
                                                  manager.Id,
                                                  manager.Name,
+                                                 manager.Email,
                                                  manager.ProfileImage,
                                              }).FirstOrDefault(),
                                   project.Avatar,

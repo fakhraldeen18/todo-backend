@@ -211,6 +211,7 @@ public class UserService : IUserService
             byte[] pepper = Encoding.UTF8.GetBytes(_config["Jwt_Pepper"]!);
             PasswordUtils.HashPassword(updatedUser.Password, out string hashedPassword, pepper);
             user.Password = hashedPassword;
+            user.Name = updatedUser.Name;
             _userRepository.UpdateOne(user);
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
