@@ -160,7 +160,6 @@ public class ProjectService : IProjectService
         try
         {
             project.UserId = updatedProject.UserId;
-            project.ManagerName = updatedProject.ManagerName;
             project.Avatar = updatedProject.Avatar;
             project.Name = updatedProject.Name;
             project.Progress = updatedProject.Progress;

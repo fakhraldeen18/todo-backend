@@ -8,7 +8,6 @@ public class ProjectReadDto
     public Guid Id { get; set; }
     [Column("ManagerId")]
     public Guid UserId { get; set; }
-    public string? ManagerName { get; set; }
     public string Name { get; set; }
     public string Avatar { get; set; }
 
@@ -29,7 +28,6 @@ public class ProjectFullDataDto
     public Guid Id { get; set; }
     [Column("ManagerId")]
     public Guid UserId { get; set; }
-    public string? ManagerName { get; set; }
     public string Name { get; set; }
     public string Avatar { get; set; }
     public string Description { get; set; }
@@ -59,7 +57,7 @@ public class ProjectFullDataDto
 public class ProjectCreateDto
 {
     [Column("ManagerId")]
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
     public string Name { get; set; }
     public string? Avatar { get; set; }
     public string? Description { get; set; }
@@ -73,8 +71,7 @@ public class ProjectCreateDto
 public class ProjectUpdateDto
 {
     [Column("ManagerId")]
-    public Guid UserId { get; set; }
-    public string? ManagerName { get; set; }
+    public Guid? UserId { get; set; }
     public string Name { get; set; }
     public string Avatar { get; set; }
     public string Description { get; set; }

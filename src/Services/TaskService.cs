@@ -99,6 +99,7 @@ public class TaskService : ITaskService
         try
         {
             task.UserId = updatedTask.UserId;
+            task.AssigneeTo = updatedTask.AssigneeTo;
             task.MilestoneId = updatedTask.MilestoneId;
             task.Title = updatedTask.Title;
             task.Description = updatedTask.Description;
@@ -239,12 +240,27 @@ public class TaskService : ITaskService
                        {
                            task.Id,
                            task.Title,
-                           Assignee = new
+                           CreateBy = new
                            {
                                user.Id,
                                user.Name,
-                               user.ProfileImage
+                               //user.ProfileImage
                            },
+                           Assignee = (from nestedTasks in tasks
+                                      join nestedUser in users on task.UserId equals user.Id
+                                      where task.AssigneeTo == nestedUser.Id
+                                      select new
+                                      {
+                                          nestedUser.Id,
+                                          nestedUser.Name,
+                                          //user.ProfileImage
+                                      }).FirstOrDefault(),
+                           //    Assignee = new
+                           //    {
+                           //        user.Id,
+                           //        user.Name,
+                           //        user.ProfileImage
+                           //    },
                            task.Description,
                            task.Priority,
                            task.Status,

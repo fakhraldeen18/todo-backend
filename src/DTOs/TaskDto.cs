@@ -7,6 +7,7 @@ public class TaskReadDto
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
+    public Guid? AssigneeTo { get; set; }
     public Guid MilestoneId { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
@@ -22,6 +23,7 @@ public class TaskCreteDto
 {
     public Guid UserId { get; set; }
     public Guid? MilestoneId { get; set; }
+    public Guid? AssigneeTo { get; set; }
     [Required]
     public string Title { get; set; }
     public string? Description { get; set; }
@@ -34,7 +36,8 @@ public class TaskCreteDto
 public class TaskUpdateDto
 {
     public Guid UserId { get; set; }
-    public Guid MilestoneId { get; set; }
+    public Guid? AssigneeTo { get; set; }
+    public Guid? MilestoneId { get; set; }
     [Required]
     public string Title { get; set; }
     public string? Description { get; set; }

@@ -7,6 +7,7 @@ public class Task
     public Guid Id { get; set; }
     public Guid UserId { get; set; } // foreign key
     public Guid? MilestoneId { get; set; } // foreign key
+    public Guid? AssigneeTo { get; set; } 
     public string Title { get; set; }
     public string? Description { get; set; }
     public float? Progress { get; set; } = 0;

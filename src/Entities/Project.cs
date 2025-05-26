@@ -6,9 +6,9 @@ namespace Harkh_backend.src.Entities;
 public class Project
 {
     public Guid Id { get; set; }
-    [Column("ManagerId")]
-    public Guid UserId { get; set; } // foreign key
-    public string? ManagerName { get; set; }
+    [Column("OwnerId")]
+    public Guid? UserId { get; set; } // foreign key
+    public Guid? ManagerId { get; set; }
     public string Name { get; set; }
     public string? Avatar { get; set; }
     public string? Description { get; set; }
