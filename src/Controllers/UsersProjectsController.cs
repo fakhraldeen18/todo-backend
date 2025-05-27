@@ -67,7 +67,7 @@ namespace Harkh_backend.src.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteOne(Guid id, Guid projectId)
         {
-            var findResult = await _userProjectService.DeleteOne(id,projectId);
+            var findResult = await _userProjectService.DeleteOne(id, projectId);
             if (findResult == false) return NotFound();
             return NoContent();
         }
@@ -91,6 +91,16 @@ namespace Harkh_backend.src.Controllers
             var noProjects = await _userProjectService.NumberOfProject(userId);
             if (noProjects == null) return NotFound();
             return Ok(noProjects);
+        }
+
+        [HttpGet("FindManager/{projectId}/{managerId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> FindOne(Guid projectId, Guid? managerId)
+        {
+            var isManager = await _userProjectService.FindManager(projectId, managerId);
+            if (isManager == false) return NotFound();
+            return Ok(isManager);
         }
     }
 }

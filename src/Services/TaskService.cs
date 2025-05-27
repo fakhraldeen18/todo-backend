@@ -244,7 +244,7 @@ public class TaskService : ITaskService
                            {
                                user.Id,
                                user.Name,
-                               //user.ProfileImage
+                               user.ProfileImage
                            },
                            Assignee = (from nestedTasks in tasks
                                       join nestedUser in users on task.UserId equals user.Id
@@ -253,7 +253,7 @@ public class TaskService : ITaskService
                                       {
                                           nestedUser.Id,
                                           nestedUser.Name,
-                                          //user.ProfileImage
+                                          user.ProfileImage
                                       }).FirstOrDefault(),
                            //    Assignee = new
                            //    {

@@ -81,9 +81,20 @@ public class UserProjectService : IUserProjectService
                               {
                                   project.Id,
                                   project.Name,
+                                  Owner = (from instantProject in projects
+                                           join owner in users
+                                           on project.UserId equals owner.Id
+                                           where project.Id == instantProject.Id
+                                           select new
+                                           {
+                                               owner.Id,
+                                               owner.Name,
+                                               owner.Email,
+                                               owner.ProfileImage,
+                                           }).FirstOrDefault(),
                                   Manager = (from instantProject in projects
                                              join manager in users
-                                             on project.UserId equals manager.Id
+                                             on project.ManagerId equals manager.Id
                                              where project.Id == instantProject.Id
                                              select new
                                              {
@@ -139,14 +150,26 @@ public class UserProjectService : IUserProjectService
                                  project.Description,
                                  project.Status,
                                  project.Avatar,
+                                 Owner = (from project in projects
+                                          join owner in users
+                                          on project.UserId equals owner.Id
+                                          where project.Id == projectId
+                                          select new
+                                          {
+                                              owner.Id,
+                                              owner.Name,
+                                              owner.Email,
+                                              owner.ProfileImage,
+                                          }).FirstOrDefault(),
                                  Manager = (from project in projects
                                             join manager in users
-                                            on project.UserId equals manager.Id
+                                            on project.ManagerId equals manager.Id
                                             where project.Id == projectId
                                             select new
                                             {
                                                 manager.Id,
                                                 manager.Name,
+                                                manager.Email,
                                                 manager.ProfileImage,
                                             }).FirstOrDefault(),
                                  Date = projects
@@ -179,6 +202,7 @@ public class UserProjectService : IUserProjectService
                                               {
                                                   user.Id,
                                                   user.Name,
+                                                  user.Email,
                                                   user.ProfileImage,
                                               }).ToList().Take(3),
                                     insightsCards = (from project in projects
@@ -340,5 +364,14 @@ public class UserProjectService : IUserProjectService
             NumberOfProjects = 0
         }).FirstOrDefault();
     }
+
+    public async Task<bool> FindManager(Guid projectId, Guid? managerId)
+    {
+        var usersProjects = await _userProjectRepository.FindAll();
+        return usersProjects.Any(userProject =>
+            userProject.ProjectId == projectId &&
+            userProject.UserId == managerId);
+    }
+
 
 }
