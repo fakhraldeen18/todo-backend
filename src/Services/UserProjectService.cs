@@ -91,7 +91,7 @@ public class UserProjectService : IUserProjectService
                                      owner.Id,
                                      owner.Name,
                                      owner.Email,
-                                     //owner.ProfileImage,
+                                     owner.ProfileImage,
                                  }).FirstOrDefault(),
                         Manager = (from instantProject in projects
                                    join manager in users
@@ -102,7 +102,7 @@ public class UserProjectService : IUserProjectService
                                        manager.Id,
                                        manager.Name,
                                        manager.Email,
-                                       //manager.ProfileImage,
+                                       manager.ProfileImage,
                                    }).FirstOrDefault(),
                         project.Avatar,
                         project.Description,
@@ -175,7 +175,7 @@ public class UserProjectService : IUserProjectService
                                               owner.Id,
                                               owner.Name,
                                               owner.Email,
-                                              //owner.ProfileImage,
+                                              owner.ProfileImage,
                                           }).FirstOrDefault(),
                                  Manager = (from project in projects
                                             join manager in users
@@ -186,7 +186,7 @@ public class UserProjectService : IUserProjectService
                                                 manager.Id,
                                                 manager.Name,
                                                 manager.Email,
-                                              //  manager.ProfileImage,
+                                                manager.ProfileImage,
                                             }).FirstOrDefault(),
                                  Date = projects
                                       .Where(x => x.Id == project.Id)
@@ -219,7 +219,7 @@ public class UserProjectService : IUserProjectService
                                                   user.Id,
                                                   user.Name,
                                                   user.Email,
-                                                 // user.ProfileImage,
+                                                  user.ProfileImage,
                                               }).ToList().Take(3),
                                     insightsCards = (from project in projects
                                                      where project.Id == projectId
