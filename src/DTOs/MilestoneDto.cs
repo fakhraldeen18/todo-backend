@@ -46,10 +46,10 @@ public class MilestoneCreateDto
 {
     public Guid ProjectId { get; set; }
     public string Name { get; set; }
-    public string Description { get; set; }
-    public float Progress { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime DueDate { get; set; }
+    public string? Description { get; set; }
+    public float? Progress { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? DueDate { get; set; }
     public DateTime CreateAt { get; set; } = DateTime.Now;
 }
 public class MilestoneUpdateDto

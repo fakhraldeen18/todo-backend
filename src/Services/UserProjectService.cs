@@ -112,7 +112,7 @@ public class UserProjectService : IUserProjectService
                         project.Status,
                         project.CreateAt,
                         project.UpdateAt,
-                        NumberOfProjects = !userProjects.Any(x => x.UserId == user.Id) ? 0 : userProjects.Count(x => x.UserId == user.Id),
+                        //NumberOfProjects = !userProjects.Any(x => x.UserId == user.Id) ? 0 : userProjects.Count(x => x.UserId == user.Id),
                         NumberOfMembers = userProjects
                                        .Where(x => x.ProjectId == project.Id)
                                        .Select(y => new
@@ -123,7 +123,7 @@ public class UserProjectService : IUserProjectService
 
         if (!string.IsNullOrEmpty(status))
         {
-            var validStatuses = new[] { "planning", "implementation", "completed", "closing" };
+            var validStatuses = new[] { "planning", "implementation", "completed", "closed" };
             if (validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             {
                 query = query.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
@@ -131,12 +131,32 @@ public class UserProjectService : IUserProjectService
         }
 
         var result = query;
+
+        // Calculate NumberOfProjects after filtering
+        var filteredResult = result.Select(x => new
+        {
+            x.Id,
+            x.Name,
+            x.Owner,
+            x.Manager,
+            x.Avatar,
+            x.Description,
+            x.Progress,
+            x.StartDate,
+            x.DueDate,
+            x.Status,
+            x.CreateAt,
+            x.UpdateAt,
+            NumberOfProjects = result.Count(), // This will now reflect the filtered count
+            x.NumberOfMembers
+        });
+
         if (limit > 0)
         {
-            result = result.Skip(offset).Take(limit);
+            filteredResult = filteredResult.Skip(offset).Take(limit);
         }
 
-        return result;
+        return filteredResult;
     }
 
 
