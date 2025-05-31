@@ -64,64 +64,79 @@ public class UserProjectService : IUserProjectService
         return projectUsers;
     }
 
-    public async Task<IEnumerable?> GetUserProjects(Guid userId, int limit, int offset)
+    public async Task<IEnumerable?> GetUserProjects(Guid userId, int limit, int offset, string? status = null)
     {
         var findUser = await _userRepository.FindOne(userId);
         if (findUser == null) return null;
         var projects = await _projectRepository.FindAll();
         var users = await _userRepository.FindAll();
         var userProjects = await _userProjectRepository.FindAll();
-        var readUserProject = from userProject in userProjects
-                              join user in users
-                              on userProject.UserId equals user.Id
-                              join project in projects
-                              on userProject.ProjectId equals project.Id
-                              where user.Id == userId
-                              select new
-                              {
-                                  project.Id,
-                                  project.Name,
-                                  Owner = (from instantProject in projects
-                                           join owner in users
-                                           on project.UserId equals owner.Id
-                                           where project.Id == instantProject.Id
-                                           select new
-                                           {
-                                               owner.Id,
-                                               owner.Name,
-                                               owner.Email,
-                                               owner.ProfileImage,
-                                           }).FirstOrDefault(),
-                                  Manager = (from instantProject in projects
-                                             join manager in users
-                                             on project.ManagerId equals manager.Id
-                                             where project.Id == instantProject.Id
-                                             select new
-                                             {
-                                                 manager.Id,
-                                                 manager.Name,
-                                                 manager.Email,
-                                                 manager.ProfileImage,
-                                             }).FirstOrDefault(),
-                                  project.Avatar,
-                                  project.Description,
-                                  project.Progress,
-                                  project.StartDate,
-                                  project.DueDate,
-                                  project.Status,
-                                  project.CreateAt,
-                                  project.UpdateAt,
-                                  NumberOfProjects = !userProjects.Any(x => x.UserId == user.Id) ? 0 : userProjects.Count(x => x.UserId == user.Id),
-                                  NumberOfMembers = userProjects
-                                      .Where(x => x.ProjectId == project.Id)
-                                      .Select(y => new
-                                      {
-                                          y.UserId
-                                      }).ToList().Count
-                              };
-        if (limit == 0 && offset == 0) return readUserProject;
-        return readUserProject.Skip(offset).Take(limit);
 
+        var query = from userProject in userProjects
+                    join user in users
+                    on userProject.UserId equals user.Id
+                    join project in projects
+                    on userProject.ProjectId equals project.Id
+                    where user.Id == userId
+                    select new
+                    {
+                        project.Id,
+                        project.Name,
+                        Owner = (from instantProject in projects
+                                 join owner in users
+                                 on project.UserId equals owner.Id
+                                 where project.Id == instantProject.Id
+                                 select new
+                                 {
+                                     owner.Id,
+                                     owner.Name,
+                                     owner.Email,
+                                     //owner.ProfileImage,
+                                 }).FirstOrDefault(),
+                        Manager = (from instantProject in projects
+                                   join manager in users
+                                   on project.ManagerId equals manager.Id
+                                   where project.Id == instantProject.Id
+                                   select new
+                                   {
+                                       manager.Id,
+                                       manager.Name,
+                                       manager.Email,
+                                       //manager.ProfileImage,
+                                   }).FirstOrDefault(),
+                        project.Avatar,
+                        project.Description,
+                        project.Progress,
+                        project.StartDate,
+                        project.DueDate,
+                        project.Status,
+                        project.CreateAt,
+                        project.UpdateAt,
+                        NumberOfProjects = !userProjects.Any(x => x.UserId == user.Id) ? 0 : userProjects.Count(x => x.UserId == user.Id),
+                        NumberOfMembers = userProjects
+                                       .Where(x => x.ProjectId == project.Id)
+                                       .Select(y => new
+                                       {
+                                           y.UserId
+                                       }).ToList().Count
+                    };
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            var validStatuses = new[] { "planning", "Implementation", "Completion", "Closing" };
+            if (validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                query = query.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        var result = query;
+        if (limit > 0)
+        {
+            result = result.Skip(offset).Take(limit);
+        }
+
+        return result;
     }
 
 
@@ -150,6 +165,7 @@ public class UserProjectService : IUserProjectService
                                  project.Description,
                                  project.Status,
                                  project.Avatar,
+                                 project.Progress,
                                  Owner = (from project in projects
                                           join owner in users
                                           on project.UserId equals owner.Id
@@ -159,7 +175,7 @@ public class UserProjectService : IUserProjectService
                                               owner.Id,
                                               owner.Name,
                                               owner.Email,
-                                              owner.ProfileImage,
+                                              //owner.ProfileImage,
                                           }).FirstOrDefault(),
                                  Manager = (from project in projects
                                             join manager in users
@@ -170,7 +186,7 @@ public class UserProjectService : IUserProjectService
                                                 manager.Id,
                                                 manager.Name,
                                                 manager.Email,
-                                                manager.ProfileImage,
+                                              //  manager.ProfileImage,
                                             }).FirstOrDefault(),
                                  Date = projects
                                       .Where(x => x.Id == project.Id)
@@ -203,7 +219,7 @@ public class UserProjectService : IUserProjectService
                                                   user.Id,
                                                   user.Name,
                                                   user.Email,
-                                                  user.ProfileImage,
+                                                 // user.ProfileImage,
                                               }).ToList().Take(3),
                                     insightsCards = (from project in projects
                                                      where project.Id == projectId

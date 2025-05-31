@@ -8,7 +8,7 @@ public interface IUserProjectService
 
     public Task<IEnumerable<UsersProjectsReadDto>> FindAll();
     public Task<IEnumerable?> GetProjectUsers(Guid projectId);
-    public Task<IEnumerable?> GetUserProjects(Guid userId, int limit, int offset);
+    public Task<IEnumerable?> GetUserProjects(Guid userId, int limit, int offset, string? status = null);
     public Task<object?> FindOne(Guid projectId);
     public Task<bool> FindManager(Guid projectId, Guid? managerId);
     public Task<object?> InsightsCards(Guid projectId);
