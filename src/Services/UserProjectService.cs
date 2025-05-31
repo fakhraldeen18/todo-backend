@@ -123,7 +123,7 @@ public class UserProjectService : IUserProjectService
 
         if (!string.IsNullOrEmpty(status))
         {
-            var validStatuses = new[] { "planning", "Implementation", "Completion", "Closing" };
+            var validStatuses = new[] { "planning", "implementation", "completed", "closing" };
             if (validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             {
                 query = query.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
