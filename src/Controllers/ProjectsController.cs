@@ -133,9 +133,9 @@ public class ProjectsController : CustomController
     [HttpGet("NumberOfProjects/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> NumberOfProject(Guid userId)
+    public async Task<ActionResult> NumberOfProject(Guid userId, [FromQuery] string? status)
     {
-        var noProjects = await _userProjectService.NumberOfProject(userId);
+        var noProjects = await _userProjectService.NumberOfProject(userId, status);
         return Ok(noProjects);
     }
 

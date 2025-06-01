@@ -112,7 +112,6 @@ public class UserProjectService : IUserProjectService
                         project.Status,
                         project.CreateAt,
                         project.UpdateAt,
-                        //NumberOfProjects = !userProjects.Any(x => x.UserId == user.Id) ? 0 : userProjects.Count(x => x.UserId == user.Id),
                         NumberOfMembers = userProjects
                                        .Where(x => x.ProjectId == project.Id)
                                        .Select(y => new
@@ -130,33 +129,13 @@ public class UserProjectService : IUserProjectService
             }
         }
 
-        var result = query;
-
-        // Calculate NumberOfProjects after filtering
-        var filteredResult = result.Select(x => new
-        {
-            x.Id,
-            x.Name,
-            x.Owner,
-            x.Manager,
-            x.Avatar,
-            x.Description,
-            x.Progress,
-            x.StartDate,
-            x.DueDate,
-            x.Status,
-            x.CreateAt,
-            x.UpdateAt,
-            NumberOfProjects = result.Count(), // This will now reflect the filtered count
-            x.NumberOfMembers
-        });
 
         if (limit > 0)
         {
-            filteredResult = filteredResult.Skip(offset).Take(limit);
+            query = query.Skip(offset).Take(limit);
         }
 
-        return filteredResult;
+        return query;
     }
 
 
@@ -376,7 +355,7 @@ public class UserProjectService : IUserProjectService
             TotalTasks = 0
         }).FirstOrDefault();
     }
-    public async Task<object?> NumberOfProject(Guid userId)
+    public async Task<object?> NumberOfProject(Guid userId, string? status = null)
     {
         var findUser = await _userRepository.FindOne(userId);
         if (findUser == null) return null;
@@ -385,20 +364,24 @@ public class UserProjectService : IUserProjectService
         var users = await _userRepository.FindAll();
         var userProjects = await _userProjectRepository.FindAll();
 
-        var noProjects = from userProject in userProjects
-                         join user in users
-                         on userProject.UserId equals user.Id
-                         join project in projects
-                         on userProject.ProjectId equals project.Id
-                         where user.Id == userId
-                         select new
-                         {
-                             NumberOfProjects = userProjects.Count(x => x.UserId == user.Id) == 0 ? 0 : userProjects.Count(x => x.UserId == user.Id)
-                         };
-        return noProjects.DefaultIfEmpty(new
+        var query = from userProject in userProjects
+                   join user in users
+                   on userProject.UserId equals user.Id
+                   join project in projects
+                   on userProject.ProjectId equals project.Id
+                   where user.Id == userId
+                   select project;
+
+        if (!string.IsNullOrEmpty(status))
         {
-            NumberOfProjects = 0
-        }).FirstOrDefault();
+            var validStatuses = new[] { "planning", "implementation", "completed", "closed" };
+            if (validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                query = query.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        return new { NumberOfProjects = query.Count() };
     }
 
     public async Task<bool> FindManager(Guid projectId, Guid? managerId)

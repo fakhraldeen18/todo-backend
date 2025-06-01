@@ -12,7 +12,7 @@ public interface IUserProjectService
     public Task<object?> FindOne(Guid projectId);
     public Task<bool> FindManager(Guid projectId, Guid? managerId);
     public Task<object?> InsightsCards(Guid projectId);
-    public Task<object?> NumberOfProject(Guid userId);
+    public Task<object?> NumberOfProject(Guid userId, string? status = null);
     public Task<UsersProjectsReadDto?> CreateOne(UsersProjectsCreateDto newUserProject);
     public Task<bool> DeleteOne(Guid id, Guid projectId);
 }
