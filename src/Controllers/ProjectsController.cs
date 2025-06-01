@@ -130,11 +130,12 @@ public class ProjectsController : CustomController
         return Ok(milestones);
     }
 
-    [HttpGet("NumberOfProjects/{userId}")]
+    [HttpGet("NumberOfProjects")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> NumberOfProject(Guid userId, [FromQuery] string? status)
+    public async Task<ActionResult> NumberOfProject([FromQuery] string? status)
     {
+        var userId = GetUserIdFromToken();
         var noProjects = await _userProjectService.NumberOfProject(userId, status);
         return Ok(noProjects);
     }
