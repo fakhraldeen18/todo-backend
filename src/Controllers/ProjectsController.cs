@@ -133,6 +133,7 @@ public class ProjectsController : CustomController
     [HttpGet("NumberOfProjects")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "TeamMember,ProjectManager,Admin")]
     public async Task<ActionResult> NumberOfProject([FromQuery] string? status)
     {
         var userId = GetUserIdFromToken();
