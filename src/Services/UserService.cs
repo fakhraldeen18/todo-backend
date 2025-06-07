@@ -8,6 +8,8 @@ using Harkh_backend.src.Utils;
 using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using Harkh_backend.src.UnitOfWork;
+using Harkh_app_production.src.Utils;
+using System.Text.RegularExpressions;
 
 namespace Harkh_backend.src.Services;
 
@@ -93,29 +95,61 @@ public class UserService : IUserService
 
     public async Task<UserReadDto?> SignUp(UserCreateDto user)
     {
-        await _unitOfWork.BeginTransaction();
-        try
+        var users = await _userRepository.FindAll();
+        if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Password))
         {
-            // Convert email to lowercase
-            user.Email = user.Email.ToLower();
-            byte[] pepper = Encoding.UTF8.GetBytes(_config["Jwt_Pepper"]!);
-            PasswordUtils.HashPassword(user.Password, out string hashedPassword, pepper);
-            user.Password = hashedPassword;
-            User mappedUser = _mapper.Map<User>(user);
-            User newUser = await _userRepository.CreateOne(mappedUser);
-            UserReadDto readerUser = _mapper.Map<UserReadDto>(newUser);
-            await _unitOfWork.Complete();
-            await _unitOfWork.CommitTransaction();
-            return readerUser;
+            throw CustomException.BadRequest("Email and Password are required");
         }
-        catch (Exception)
+        if (users.Any(u => u.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase)))
         {
-            await _unitOfWork.RollbackTransaction();
-            return null;
+            throw CustomException.BadRequest("Email already register please try another one");
         }
-    }
+
+        else
+        {
+            string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$";
+            if (!Regex.IsMatch(user.Password, passwordPattern))
+            {
+                throw CustomException.BadRequest("Password must contain at least one uppercase letter, one lowercase letter, one number, one special character, and be at least 8 characters long");
+            }
+            else if (user.Password.Length > 100)
+            {
+                throw CustomException.BadRequest("Password must be less than 100 characters long");
+            }
+        }
+            await _unitOfWork.BeginTransaction();
+            try
+            {
+                // Convert email to lowercase
+                user.Email = user.Email.ToLower();
+                byte[] pepper = Encoding.UTF8.GetBytes(_config["Jwt_Pepper"]!);
+                PasswordUtils.HashPassword(user.Password, out string hashedPassword, pepper);
+                user.Password = hashedPassword;
+                User mappedUser = _mapper.Map<User>(user);
+                User newUser = await _userRepository.CreateOne(mappedUser);
+                UserReadDto readerUser = _mapper.Map<UserReadDto>(newUser);
+                await _unitOfWork.Complete();
+                await _unitOfWork.CommitTransaction();
+                return readerUser;
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransaction();
+                return null;
+            }
+        }
     public async Task<UserReadDto?> CreateInviteUser(string inviteUserEmail)
     {
+
+        var users = await _userRepository.FindAll();
+        if (string.IsNullOrWhiteSpace(inviteUserEmail))
+        {
+            throw CustomException.BadRequest("Email is required");
+        }
+        if (users.Any(u => u.Email.Equals(inviteUserEmail, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw CustomException.BadRequest("Email already register please try another one");
+        }
         await _unitOfWork.BeginTransaction();
         try
         {
@@ -205,6 +239,17 @@ public class UserService : IUserService
     {
         User? user = await _userRepository.FindOne(id);
         if (user == null) return null;
+
+        string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$";
+        if (!Regex.IsMatch(updatedUser.Password, passwordPattern))
+        {
+            throw CustomException.BadRequest("Password must contain at least one uppercase letter, one lowercase letter, one number, one special character, and be at least 8 characters long");
+        }
+        else if (updatedUser.Password.Length > 100)
+        {
+            throw CustomException.BadRequest("Password must be less than 100 characters long");
+        }
+
         await _unitOfWork.BeginTransaction();
         try
         {

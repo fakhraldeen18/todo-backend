@@ -93,6 +93,7 @@ public class UsersController : CustomController
     [HttpPatch("InviteUserPassWord/{id}")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserReadDto>> UpdateUserInvitePassWord(Guid id, [FromBody] UserInviteUpdatePassWordDto updateUser)
     {
         UserReadDto? findUser = await _userService.FindOne(id);
