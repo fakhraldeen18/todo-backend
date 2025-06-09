@@ -140,16 +140,6 @@ public class UserService : IUserService
         }
     public async Task<UserReadDto?> CreateInviteUser(string inviteUserEmail)
     {
-
-        var users = await _userRepository.FindAll();
-        if (string.IsNullOrWhiteSpace(inviteUserEmail))
-        {
-            throw CustomException.BadRequest("Email is required");
-        }
-        if (users.Any(u => u.Email.Equals(inviteUserEmail, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw CustomException.BadRequest("Email already register please try another one");
-        }
         await _unitOfWork.BeginTransaction();
         try
         {

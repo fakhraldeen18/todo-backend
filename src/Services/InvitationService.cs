@@ -1,5 +1,6 @@
 using AutoMapper;
 using Harkh_app_production.src.Abstractions;
+using Harkh_app_production.src.Utils;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
 using Harkh_backend.src.Entities;
@@ -57,35 +58,47 @@ public class InvitationService : IInvitationService
     public async Task<bool> ProcessInvitationAsync(InvitationDto Invitation)
     {
 
-        var newUser = await _userService.CreateInviteUser(Invitation.ToEmail);
-        // string guidString = Invitation.ProjectLink.Split('/').Last();
-        // Guid invitationGuid;
-        // if (!Guid.TryParse(guidString, out invitationGuid))
-        // {
-        //     throw new ArgumentException("Invalid invitation link format");
-        // }
-        var newProjectUser = new UsersProjectsCreateDto
+        var users = await _userService.FindAll();
+        if (string.IsNullOrWhiteSpace(Invitation.ToEmail))
         {
-            ProjectId = Invitation.ProjectId,
-            UserId = newUser!.Id
-        };
-        await _userProjectRepository.CreateOne(newProjectUser);
+            throw CustomException.BadRequest("Email is required");
+        }
+        if (users.Any(u => u.Email.Equals(Invitation.ToEmail, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw CustomException.BadRequest("Email already register please try another one");
+        }
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            var newUser = await _userService.CreateInviteUser(Invitation.ToEmail);
+            // string guidString = Invitation.ProjectLink.Split('/').Last();
+            // Guid invitationGuid;
+            // if (!Guid.TryParse(guidString, out invitationGuid))
+            // {
+            //     throw new ArgumentException("Invalid invitation link format");
+            // }
+            var newProjectUser = new UsersProjectsCreateDto
+            {
+                ProjectId = Invitation.ProjectId,
+                UserId = newUser!.Id
+            };
+            await _userProjectRepository.CreateOne(newProjectUser);
 
-        // Save to database
-        Invitation.ProjectLink = $"http://localhost:3000/invitation/{newUser.Id}";
-        await CreateOne(Invitation);
-        
-        // Send email
-        var emailRequest = new EmailSender
-        {
-            SenderID = Invitation.UserId,
-            ToEmail = $"{Invitation.ToEmail}", // Replace with recipient's email
-            Subject = $"You're invited to join {Invitation.ProjectName} on Haraka! 🚀",
-            PlainTextContent = $"Hi {Invitation.Name},\n\nYou’ve been added to \"{Invitation.ProjectName}\" on Haraka!\n\n" +
-                      $"🔸 Access the project here: {Invitation.ProjectLink}\n" +
-                      $"🔸 Get started in seconds.\n\n" +
-                      $"Cheers,\n{Invitation.YourName}",
-            HtmlContent = $@"
+            // Save to database
+            Invitation.ProjectLink = $"http://localhost:3000/invitation/{newUser.Id}";
+            await CreateOne(Invitation);
+
+            // Send email
+            var emailRequest = new EmailSender
+            {
+                SenderID = Invitation.UserId,
+                ToEmail = $"{Invitation.ToEmail}", // Replace with recipient's email
+                Subject = $"You're invited to join {Invitation.ProjectName} on Haraka! 🚀",
+                PlainTextContent = $"Hi {Invitation.Name},\n\nYou’ve been added to \"{Invitation.ProjectName}\" on Haraka!\n\n" +
+                          $"🔸 Access the project here: {Invitation.ProjectLink}\n" +
+                          $"🔸 Get started in seconds.\n\n" +
+                          $"Cheers,\n{Invitation.YourName}",
+                HtmlContent = $@"
         <p>Hi {Invitation.ToEmail},</p>
         <p>You’ve been added to <strong>{Invitation.ProjectName}</strong> on Haraka!</p>
         <ul>
@@ -93,9 +106,16 @@ public class InvitationService : IInvitationService
             <li>🔸 Get started in seconds.</li>
         </ul>
         <p>Cheers,<br/>{Invitation.YourName}</p>"
-        };
+            };
 
-
-        return await _emailSenderService.SendEmailAsync(emailRequest);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return await _emailSenderService.SendEmailAsync(emailRequest);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return false;
+        }
     }
 }
