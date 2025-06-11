@@ -361,6 +361,8 @@ public class UserProjectService : IUserProjectService
                     where user.Id == userId
                     select project;
 
+        var totalProjects = query.Count();
+        
         if (!string.IsNullOrEmpty(status))
         {
             var validStatuses = new[] { "planning", "implementation", "completed", "closed" };
@@ -370,7 +372,11 @@ public class UserProjectService : IUserProjectService
             }
         }
 
-        return new { NumberOfProjects = query.Count() };
+        return new
+        {
+            NumberOfProjects = query.Count(),
+            TotalNumberOfProjects = totalProjects
+        };
     }
 
     public async Task<bool> FindManager(Guid projectId, Guid? managerId)
