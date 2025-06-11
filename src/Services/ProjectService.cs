@@ -63,6 +63,7 @@ public class ProjectService : IProjectService
         await _unitOfWork.BeginTransaction();
         try
         {
+            project.ManagerId = project.UserId;
             var createdProject = await _projectRepository.CreateOne(project);
             var newProjectUser = new UsersProjectsCreateDto
             {
@@ -72,16 +73,16 @@ public class ProjectService : IProjectService
             var userProject = _mapper.Map<UserProject>(newProjectUser);
             await _userProjectRepository.CreateOne(userProject);
 
-            if (newProject.ManagerId != null)
-            {
-                var newManagerProject = new UsersProjectsCreateDto
-                {
-                    ProjectId = createdProject.Id,
-                    UserId = newProject.ManagerId.Value
-                };
-                var managerProject = _mapper.Map<UserProject>(newManagerProject);
-                await _userProjectRepository.CreateOne(managerProject);
-            }
+            // if (newProject.ManagerId != null)
+            // {
+            //     var newManagerProject = new UsersProjectsCreateDto
+            //     {
+            //         ProjectId = createdProject.Id,
+            //         UserId = newProject.ManagerId.Value
+            //     };
+            //     var managerProject = _mapper.Map<UserProject>(newManagerProject);
+            //     await _userProjectRepository.CreateOne(managerProject);
+            // }
 
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
@@ -183,7 +184,7 @@ public class ProjectService : IProjectService
         await _unitOfWork.BeginTransaction();
         try
         {
-            project.UserId = updatedProject.UserId;
+            //project.UserId = updatedProject.UserId;
             project.ManagerId = updatedProject.ManagerId;
             project.Avatar = updatedProject.Avatar;
             project.Name = updatedProject.Name;
