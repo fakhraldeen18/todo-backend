@@ -92,17 +92,6 @@ public class UserProjectService : IUserProjectService
                                        manager.Name,
                                        manager.Email,
                                        manager.ProfileImage,
-                                       Owner = (from instantProject in projects
-                                                join owner in users
-                                                on project.UserId equals owner.Id
-                                                where project.Id == instantProject.Id
-                                                select new
-                                                {
-                                                    owner.Id,
-                                                    owner.Name,
-                                                    owner.Email,
-                                                    owner.ProfileImage,
-                                                }).FirstOrDefault(),
                                    }).FirstOrDefault(),
                         project.Avatar,
                         project.Description,
@@ -175,18 +164,18 @@ public class UserProjectService : IUserProjectService
                                                 manager.Name,
                                                 manager.Email,
                                                 manager.ProfileImage,
-                                                Owner = (from project in projects
-                                                         join owner in users
-                                                         on project.UserId equals owner.Id
-                                                         where project.Id == projectId
-                                                         select new
-                                                         {
-                                                             owner.Id,
-                                                             owner.Name,
-                                                             owner.Email,
-                                                             owner.ProfileImage,
-                                                         }).FirstOrDefault(),
                                             }).FirstOrDefault(),
+                                 Owner = (from project in projects
+                                          join owner in users
+                                          on project.UserId equals owner.Id
+                                          where project.Id == projectId
+                                          select new
+                                          {
+                                              owner.Id,
+                                              owner.Name,
+                                              owner.Email,
+                                              owner.ProfileImage,
+                                          }).FirstOrDefault(),
                                  Date = projects
                                       .Where(x => x.Id == project.Id)
                                       .Select(x => new
@@ -365,12 +354,12 @@ public class UserProjectService : IUserProjectService
         var userProjects = await _userProjectRepository.FindAll();
 
         var query = from userProject in userProjects
-                   join user in users
-                   on userProject.UserId equals user.Id
-                   join project in projects
-                   on userProject.ProjectId equals project.Id
-                   where user.Id == userId
-                   select project;
+                    join user in users
+                    on userProject.UserId equals user.Id
+                    join project in projects
+                    on userProject.ProjectId equals project.Id
+                    where user.Id == userId
+                    select project;
 
         if (!string.IsNullOrEmpty(status))
         {
