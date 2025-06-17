@@ -247,7 +247,7 @@ public class UserProjectService : IUserProjectService
                                               task.Id,
                                               task.Title,
                                               assignee = users
-                                                  .Where(x => x.Id == task.UserId)
+                                                  .Where(x => x.Id == task.AssigneeTo)
                                                   .Select(x => new
                                                   {
                                                       x.Id,

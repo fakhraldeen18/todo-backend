@@ -158,6 +158,7 @@ public class MilestoneService : IMilestoneService
                              select new MilestoneJoinTaskDto
                              {
                                  UserId = task.UserId,
+                                 AssigneeTo = task.AssigneeTo,
                                  Title = task.Title,
                                  Description = task.Description,
                                  Progress = task.Progress,
@@ -227,6 +228,7 @@ public class MilestoneService : IMilestoneService
                                                 .Select(task => new
                                                 {
                                                     task.UserId,
+                                                    task.AssigneeTo,
                                                     task.Title,
                                                     task.Description,
                                                     task.Progress,
