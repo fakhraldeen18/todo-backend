@@ -43,7 +43,7 @@ public class MilestonesController : CustomController
     [HttpGet("withTasks/{projectId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MilestoneFullDataDto>> FindMilestonesWithTasks(Guid projectId)
+    public async Task<ActionResult> FindMilestonesWithTasks(Guid projectId)
     {
         var milestone = await _milestoneService.FindMilestonesWithTasks(projectId);
         if (milestone == null) return NotFound();
