@@ -90,7 +90,7 @@ public class UserSkillService : IUserSkillService
                             where user.Id == userId
                             select new
                             {
-                                name = user.Name,
+                                skill.Id,
                                 skillName = skill.Name
                             };
         return joinUserSkill;
@@ -129,8 +129,9 @@ public class UserSkillService : IUserSkillService
             {
                 skill.UserId = userId; // Ensure all skills are assigned to this user
             }
-            var createRange = _mapper.Map<IEnumerable<UserSkill>>(userSkills);
-            _userSkillRepository.DeleteRange(createRange);
+            var findAll = await _userSkillRepository.FindAll();
+            var findUserSkills = findAll.Where(x => x.UserId == userId && newSkills.Any(y => y.SkillId == x.SkillId));
+            _userSkillRepository.DeleteRange(findUserSkills);
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
             return true;

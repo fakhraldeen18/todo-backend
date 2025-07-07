@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using Harkh_backend.src.Enums;
 using Harkh_backend.src.UnitOfWork;
 using Harkh_app_production.src.Abstractions;
+using Harkh_app_production.src.middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -153,7 +154,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 app.MapControllers();
-
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseAuthentication();// Authentication first then Authorization
 app.UseAuthorization();
 

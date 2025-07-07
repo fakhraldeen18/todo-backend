@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
+using System.Collections;
 
 namespace Harkh_backend.src.Controllers;
 
@@ -29,6 +30,25 @@ public class TasksController : CustomController
     public async Task<ActionResult<TaskReadDto>> FindOne(Guid id)
     {
         var findTask = await _TaskService.FindOne(id);
+        if (findTask == null) return NotFound();
+        return Ok(findTask);
+    }
+
+    [HttpGet("user/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable>> GetUserTasks(Guid userId)
+    {
+        var findTask = await _TaskService.GetUserTasks(userId);
+        if (findTask == null) return NotFound();
+        return Ok(findTask);
+    }
+    [HttpGet("user/full-data/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable>> GetUserTasksFullData(Guid userId)
+    {
+        var findTask = await _TaskService.GetUserTasksFullData(userId);
         if (findTask == null) return NotFound();
         return Ok(findTask);
     }

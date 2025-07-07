@@ -23,6 +23,8 @@ public class UserCreateDto
     [EmailAddress]
     public string Email { get; set; }
     [Required]
+    public string Name { get; set; }
+    [Required]
     public string Password { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
@@ -44,12 +46,9 @@ public class UserLogInDto
 
 public class UserUpdateProfileDto
 {
-    [Required]
-    public string Name { get; set; }
-    [Required]
-    public string Position { get; set; }
-    [Required]
-    public string ProfileImage { get; set; }
+    public string? Name { get; set; }
+    public string? Position { get; set; }
+    public string? ProfileImage { get; set; }
 }
 
 
@@ -76,5 +75,12 @@ public class UserUpdateRoleDto
 public class UserInviteUpdatePassWordDto
 {
     [Required]
+    public string Name { get; set; }
+    [Required]
     public string Password { get; set; }
+}
+public class UserInviteEmailDto
+{
+    [Required]
+    public string Email { get; set; }
 }

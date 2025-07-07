@@ -1,101 +1,91 @@
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections;
+using System.Security.Claims;
+
 
 namespace Harkh_backend.src.Controllers;
 
 public class ProjectsController : CustomController
 {
 
-    private readonly IProjectService _projectService;
-    private readonly IDocumentService _documentService;
+    private Guid GetUserIdFromToken()
+    {
+        var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new UnauthorizedAccessException("User ID not found in token");
 
-    public ProjectsController(IProjectService projectService, IDocumentService documentService)
+        return Guid.Parse(userIdClaim.Value);
+    }
+    private readonly IProjectService _projectService;
+    private readonly IUserProjectService _userProjectService;
+
+    public ProjectsController(IProjectService projectService, IUserProjectService userProjectService)
     {
         _projectService = projectService;
-        _documentService = documentService;
+        _userProjectService = userProjectService;
     }
+
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ProjectReadDto>>> FindAll()
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "TeamMember,ProjectManager,Admin")]
+    public async Task<ActionResult<IEnumerable>> GetUserProjects(
+        [FromQuery(Name = "limit")] int limit, 
+        [FromQuery(Name = "offset")] int offset,
+        [FromQuery(Name = "status")] string? status)
     {
-        IEnumerable<ProjectReadDto> projects = await _projectService.FindAll();
-        return Ok(projects);
+        var userId = GetUserIdFromToken();
+        var result = await _userProjectService.GetUserProjects(userId, limit, offset, status);
+        if (result == null) return NotFound();
+        return Ok(result);
     }
 
-    [HttpGet("full-data/{id}")]
+
+    [HttpGet("{projectId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IEnumerable<ProjectFullDataDto>>> FindAllFullData(Guid id)
+    public async Task<ActionResult> FindOne(Guid projectId)
     {
-        ProjectFullDataDto projects = await _projectService.FindAllFullData(id);
-        if (projects == null) return NotFound();
-        return Ok(projects);
-    }
-    [HttpGet("pagination")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ProjectReadDto>>> FindAll([FromQuery(Name = "limit")] int limit, [FromQuery(Name = "offset")] int offset)
-    {
-        IEnumerable<ProjectReadDto> projects = await _projectService.FindAll(limit, offset);
-        return Ok(projects);
-    }
-
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProjectReadDto>> CreateOne([FromBody] ProjectCreateDto newProject)
-    {
-        if (newProject == null) return BadRequest();
-        ProjectReadDto? caretProject = await _projectService.CreateOne(newProject);
-        return CreatedAtAction(nameof(CreateOne), caretProject);
-    }
-
-
-    [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ProjectReadDto>> FindOne(Guid id)
-    {
-        ProjectReadDto? project = await _projectService.FindOne(id);
+        var project = await _userProjectService.FindOne(projectId);
         if (project == null) return NotFound();
         return Ok(project);
     }
 
+    // [HttpPost]
+    // [ProducesResponseType(StatusCodes.Status201Created)]
+    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    // public async Task<ActionResult<ProjectReadDto>> CreateOne([FromBody] ProjectCreateDto newProject)
+    // {
+    //     if (newProject == null) return BadRequest();
+    //     ProjectReadDto? caretProject = await _projectService.CreateOne(newProject);
+    //     return CreatedAtAction(nameof(CreateOne), caretProject);
+    // }
 
-    [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteOne(Guid id)
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> CreateOneProject([FromBody] ProjectCreateDto newProject)
     {
-        ProjectReadDto? findProject = await _projectService.FindOne(id);
-        if (findProject == null) return NotFound();
-        await _projectService.DeleteOne(id);
-        return NoContent();
+        if (newProject == null) return BadRequest();
+        var caretProject = await _projectService.CreateOneProject(newProject);
+        return CreatedAtAction(nameof(CreateOneProject), caretProject);
     }
 
-
-    [HttpPatch("{id}")]
+    [HttpPatch("{projectId}")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ProjectReadDto>> UpdateOne(Guid id, [FromBody] ProjectUpdateDto updateProject)
+    public async Task<ActionResult<ProjectReadDto>> UpdateOne(Guid projectId, [FromBody] ProjectUpdateDto updateProject)
     {
-        ProjectReadDto? findProject = await _projectService.FindOne(id);
+        ProjectReadDto? findProject = await _projectService.FindOne(projectId);
         if (findProject == null) return NotFound();
-        ProjectReadDto? updatedProject = await _projectService.UpdateOne(id, updateProject);
+        ProjectReadDto? updatedProject = await _projectService.UpdateOne(projectId, updateProject);
         return Accepted(updatedProject);
     }
 
-    [HttpPatch("status/{id}")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ProjectReadDto>> UpdateStatus(Guid id, [FromBody] ProjectUpdateStatusDto updateProjectStatus)
-    {
-        var findProject = _projectService.FindOne(id);
-        if (findProject == null) return NotFound();
-        ProjectReadDto? updatedProject = await _projectService.UpdateStatus(id, updateProjectStatus);
-        return Accepted(updatedProject);
-    }
     [HttpPost("document")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,24 +96,59 @@ public class ProjectsController : CustomController
         return CreatedAtAction(nameof(CreteDocument), createdDocument);
     }
 
-    [HttpGet("milestones/{id}")]
+    [HttpGet("documents/{projectId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IEnumerable<ProjectJoinMilestoneDto>>> GetAllMilestones(Guid id)
+    public async Task<ActionResult> GetAllDocuments(Guid projectId)
     {
-        var findProject = await _projectService.FindOne(id);
+        var findProject = await _projectService.FindOne(projectId);
         if (findProject == null) return NotFound();
-        var milestones = await _projectService.GetMilestones(id);
+        var documents = await _projectService.GetDocuments(projectId);
+        return Ok(documents);
+    }
+
+    [HttpDelete("{projectId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
+    public async Task<ActionResult> DeleteOne(Guid projectId)
+    {
+        ProjectReadDto? findProject = await _projectService.FindOne(projectId);
+        if (findProject == null) return NotFound();
+        await _projectService.DeleteOne(projectId);
+        return NoContent();
+    }
+
+    [HttpGet("milestones/{projectId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<ProjectJoinMilestoneDto>>> GetAllMilestones(Guid projectId)
+    {
+        var findProject = await _projectService.FindOne(projectId);
+        if (findProject == null) return NotFound();
+        var milestones = await _projectService.GetMilestones(projectId);
         return Ok(milestones);
     }
-    [HttpGet("documents/{id}")]
+
+    [HttpGet("NumberOfProjects")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> GetAllDocuments(Guid id)
+    [Authorize]
+    public async Task<ActionResult> NumberOfProject([FromQuery] string? status)
     {
-        var findProject = await _projectService.FindOne(id);
-        if (findProject == null) return NotFound();
-        var documents = await _projectService.GetDocuments(id);
-        return Ok(documents);
+        var userId = GetUserIdFromToken();
+        var noProjects = await _userProjectService.NumberOfProject(userId, status);
+        return Ok(noProjects);
+    }
+
+    [HttpDelete("member/{memberId}/{projectId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
+    public async Task<ActionResult> DeleteOne(Guid memberId, Guid projectId)
+    {
+        var findResult = await _userProjectService.DeleteOne(memberId, projectId);
+        if (findResult == false) return NotFound();
+        return NoContent();
     }
 }

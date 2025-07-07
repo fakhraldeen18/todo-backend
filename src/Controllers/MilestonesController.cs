@@ -31,6 +31,24 @@ public class MilestonesController : CustomController
         if (milestone == null) return NotFound();
         return Ok(milestone);
     }
+    [HttpGet("project-milestones/{projectId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<MilestoneFullDataDto>> FindAllProjectMilestonesData(Guid projectId)
+    {
+        var milestone = await _milestoneService.FindAllProjectMilestonesData(projectId);
+        if (milestone == null) return NotFound();
+        return Ok(milestone);
+    }
+    [HttpGet("withTasks/{projectId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> FindMilestonesWithTasks(Guid projectId)
+    {
+        var milestone = await _milestoneService.FindMilestonesWithTasks(projectId);
+        if (milestone == null) return NotFound();
+        return Ok(milestone);
+    }
 
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -40,6 +58,24 @@ public class MilestonesController : CustomController
         var findMilestone = await _milestoneService.FindOne(id);
         if (findMilestone == null) return NotFound();
         return Ok(findMilestone);
+    }
+    [HttpGet("user/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GetUserMilestones(Guid userId)
+    {
+        var findUserMilestones = await _milestoneService.GetUserMilestones(userId);
+        if (findUserMilestones == null) return NotFound();
+        return Ok(findUserMilestones);
+    }
+    [HttpGet("withUserTask/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<MilestoneReadDto>> GetUserMilestoneWithTasks(Guid userId)
+    {
+        var findUserMilestones = await _milestoneService.GetUserMilestoneWithTasks(userId);
+        if (findUserMilestones == null) return NotFound();
+        return Ok(findUserMilestones);
     }
 
     [HttpPost]
@@ -60,6 +96,16 @@ public class MilestonesController : CustomController
         var findMilestone = await _milestoneService.FindOne(id);
         if (findMilestone == null) return NotFound();
         await _milestoneService.DeleteOne(id);
+        return NoContent();
+    }
+    [HttpDelete("withTasks/{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteOneWithTasks(Guid id)
+    {
+        var findMilestone = await _milestoneService.FindAllFullData(id);
+        if (findMilestone == null) return NotFound();
+        await _milestoneService.DeleteOneWithTasks(id);
         return NoContent();
     }
 

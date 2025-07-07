@@ -15,6 +15,7 @@ public class MilestoneService : IMilestoneService
     private readonly IProjectRepository _projectRepository;
     private readonly IBaseRepository<Entities.Task> _taskRepository;
     private readonly IBaseRepository<Document> _documentRepository;
+    private readonly IBaseRepository<User> _userRepository;
 
 
     public MilestoneService(IMilestoneRepository milestoneRepository, IProjectRepository projectRepository, IMapper mapper, IUnitOfWork unitOfWork)
@@ -25,6 +26,7 @@ public class MilestoneService : IMilestoneService
         _unitOfWork = unitOfWork;
         _taskRepository = _unitOfWork.Tasks;
         _documentRepository = _unitOfWork.Documents;
+        _userRepository = _unitOfWork.Users;
     }
 
     public async Task<MilestoneReadDto?> CreateOne(MilestoneCreateDto newMilestone)
@@ -67,6 +69,24 @@ public class MilestoneService : IMilestoneService
             return false;
         }
     }
+    public async Task<bool> DeleteOneWithTasks(Guid id)
+    {
+        Milestone? milestone = await _milestoneRepository.FindAllFullData(id);
+        if (milestone == null) return false;
+        await _unitOfWork.BeginTransaction();
+        try
+        {
+            _milestoneRepository.DeleteOne(milestone);
+            await _unitOfWork.Complete();
+            await _unitOfWork.CommitTransaction();
+            return true;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransaction();
+            return false;
+        }
+    }
 
     public async Task<IEnumerable<MilestoneReadDto>> FindAll()
     {
@@ -79,6 +99,74 @@ public class MilestoneService : IMilestoneService
         var milestones = await _milestoneRepository.FindAllFullData(id);
         MilestoneFullDataDto readMilestone = _mapper.Map<MilestoneFullDataDto>(milestones);
         return readMilestone;
+    }
+    public async Task<IEnumerable<MilestoneFullDataDto>?> FindAllProjectMilestonesData(Guid projectId)
+    {
+        var findProject = await _projectRepository.FindOne(projectId);
+        if (findProject == null) return null;
+        var milestones = await _milestoneRepository.FindAllProjectMilestonesData(projectId);
+        return _mapper.Map<IEnumerable<MilestoneFullDataDto>>(milestones);
+
+    }
+    public async Task<IEnumerable?> FindMilestonesWithTasks(Guid projectId)
+    {
+        var findProject = await _projectRepository.FindOne(projectId);
+        if (findProject == null) return null;
+        var users = await _userRepository.FindAll();
+        var projects = await _projectRepository.FindAll();
+        var milestones = await _milestoneRepository.FindAll();
+        var tasks = await _taskRepository.FindAll();
+        var milestoneTasks = from project in projects
+                             join milestone in milestones
+                             on project.Id equals milestone.ProjectId
+                             where project.Id == projectId
+                             select new
+                             {
+                                 milestone.Id,
+                                 milestone.Name,
+                                 milestone.Description,
+                                 milestone.Progress,
+                                 milestone.StartDate,
+                                 milestone.DueDate,
+                                 milestone.CreateAt,
+                                 milestone.UpdateAt,
+                                 NumberOfTasks = tasks
+                                       .Where(x => x.MilestoneId == milestone.Id)
+                                       .Select(y => new
+                                       {
+                                           y.Id
+                                       }).ToList().Count,
+                                 tasks = (
+                                          from task in tasks
+                                          where task.MilestoneId == milestone.Id
+                                          select new
+                                          {
+                                              task.Id,
+                                              task.Title,
+                                              createdBy = users
+                                                  .Where(x => x.Id == task.UserId)
+                                                  .Select(x => new
+                                                  {
+                                                      x.Id,
+                                                      x.Name,
+                                                      x.ProfileImage,
+                                                  }).FirstOrDefault(),
+                                              assignee = users
+                                                  .Where(x => x.Id == task.AssigneeTo)
+                                                  .Select(x => new
+                                                  {
+                                                      x.Id,
+                                                      x.Name,
+                                                      x.ProfileImage,
+                                                  }).FirstOrDefault(),
+                                              task.Description,
+                                              task.Priority,
+                                              task.Status,
+                                              task.StartDate,
+                                              task.DueDate
+                                          })
+                             };
+        return milestoneTasks;
     }
 
     public async Task<MilestoneReadDto?> FindOne(Guid id)
@@ -97,7 +185,9 @@ public class MilestoneService : IMilestoneService
         {
             milestone.ProjectId = updatedMilestone.ProjectId;
             milestone.Name = updatedMilestone.Name;
+            milestone.Description = updatedMilestone.Description;
             milestone.Progress = updatedMilestone.Progress;
+            milestone.StartDate = updatedMilestone.StartDate;
             milestone.DueDate = updatedMilestone.DueDate;
             _milestoneRepository.UpdateOne(milestone);
             await _unitOfWork.Complete();
@@ -128,6 +218,7 @@ public class MilestoneService : IMilestoneService
                              select new MilestoneJoinTaskDto
                              {
                                  UserId = task.UserId,
+                                 AssigneeTo = task.AssigneeTo,
                                  Title = task.Title,
                                  Description = task.Description,
                                  Progress = task.Progress,
@@ -140,6 +231,76 @@ public class MilestoneService : IMilestoneService
         return milestoneTasks;
     }
 
+
+    public async Task<IEnumerable?> GetUserMilestones(Guid userId)
+    {
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+        var milestones = await _milestoneRepository.FindAll();
+        var tasks = await _taskRepository.FindAll();
+        var users = await _userRepository.FindAll();
+        var userMilestones = from milestone in milestones
+                             join task in tasks
+                             on milestone.Id equals task.MilestoneId
+                             join user in users
+                             on task.UserId equals user.Id
+                             where user.Id == userId
+                             group milestone by milestone.Id into g
+                             select new
+                             {
+                                 Id = g.Key,
+                                 Name = g.First().Name,
+                                 Description = g.First().Description,
+                                 Progress = g.First().Progress,
+                                 StartDate = g.First().StartDate,
+                                 DueDate = g.First().DueDate,
+                                 UpdateAt = g.First().UpdateAt,
+                                 CreateAt = g.First().CreateAt
+                             };
+        return userMilestones;
+    }
+
+    public async Task<IEnumerable?> GetUserMilestoneWithTasks(Guid userId)
+    {
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+        var milestones = await _milestoneRepository.FindAll();
+        var tasks = await _taskRepository.FindAll();
+        var users = await _userRepository.FindAll();
+        var userMilestonesAndTasks = from milestone in milestones
+                                     join task in tasks
+                                     on milestone.Id equals task.MilestoneId
+                                     join user in users
+                                     on task.UserId equals user.Id
+                                     where user.Id == userId
+                                     group milestone by milestone.Id into g
+                                     select new
+                                     {
+                                         Id = g.Key,
+                                         Name = g.First().Name,
+                                         Description = g.First().Description,
+                                         Progress = g.First().Progress,
+                                         StartDate = g.First().StartDate,
+                                         DueDate = g.First().DueDate,
+                                         UpdateAt = g.First().UpdateAt,
+                                         CreateAt = g.First().CreateAt,
+                                         Tasks = tasks.Where(t => t.MilestoneId == g.Key)
+                                                .Select(task => new
+                                                {
+                                                    task.UserId,
+                                                    task.AssigneeTo,
+                                                    task.Title,
+                                                    task.Description,
+                                                    task.Progress,
+                                                    task.Status,
+                                                    task.Priority,
+                                                    task.CreatedAt,
+                                                    task.StartDate,
+                                                    task.DueDate
+                                                }).ToList()
+                                     };
+        return userMilestonesAndTasks;
+    }
 
     public async Task<IEnumerable?> GetDocuments(Guid id)
     {

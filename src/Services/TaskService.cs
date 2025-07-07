@@ -1,3 +1,4 @@
+using System.Collections;
 using AutoMapper;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
@@ -10,6 +11,7 @@ public class TaskService : ITaskService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBaseRepository<Entities.Task> _taskRepository;
+    private readonly IBaseRepository<User> _userRepository;
     private readonly IMilestoneRepository _milestoneRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IMapper _mapper;
@@ -18,6 +20,7 @@ public class TaskService : ITaskService
     {
         _unitOfWork = unitOfWork;
         _taskRepository = _unitOfWork.Tasks;
+        _userRepository = _unitOfWork.Users;
         _milestoneRepository = milestoneRepository;
         _mapper = mapper;
         _projectRepository = projectRepository;
@@ -27,7 +30,7 @@ public class TaskService : ITaskService
     {
         Entities.Task readTask = _mapper.Map<Entities.Task>(newTask);
         if (readTask == null) return null;
-        if (readTask.Status.ToString() == "Done") readTask.Progress = 100;
+        if (readTask.Status.ToLower() == "done") readTask.Progress = 100;
         await _unitOfWork.BeginTransaction();
         try
         {
@@ -95,6 +98,9 @@ public class TaskService : ITaskService
         await _unitOfWork.BeginTransaction();
         try
         {
+            task.UserId = updatedTask.UserId;
+            task.AssigneeTo = updatedTask.AssigneeTo;
+            task.MilestoneId = updatedTask.MilestoneId;
             task.Title = updatedTask.Title;
             task.Description = updatedTask.Description;
             task.Status = updatedTask.Status;
@@ -102,8 +108,7 @@ public class TaskService : ITaskService
             task.DueDate = updatedTask.DueDate;
             task.UpdateAt = updatedTask.UpdateAt;
 
-            if (task.Status.ToString() == "Done") task.Progress = 100;
-
+            if (task.Status.ToLower() == "done") task.Progress = 100;
             _taskRepository.UpdateOne(task);
             await _unitOfWork.Complete();
             if (task.MilestoneId == null)
@@ -135,7 +140,7 @@ public class TaskService : ITaskService
         try
         {
             task.Status = updatedStatus.Status;
-            if (task.Status.ToString() == "Done") task.Progress = 100;
+            if (task.Status.ToLower() == "done") task.Progress = 100;
             _taskRepository.UpdateOne(task);
             await _unitOfWork.Complete();
             if (task.MilestoneId == null)
@@ -208,5 +213,61 @@ public class TaskService : ITaskService
             await _unitOfWork.RollbackTransaction();
             return null;
         }
+    }
+
+    public async Task<IEnumerable?> GetUserTasks(Guid userId)
+    {
+
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+        var tasks = await _taskRepository.FindAll();
+        var userTask = tasks.Where(x => x.UserId == userId);
+        return userTask;
+    }
+    public async Task<IEnumerable?> GetUserTasksFullData(Guid userId)
+    {
+
+        var findUser = await _userRepository.FindOne(userId);
+        if (findUser == null) return null;
+
+        var tasks = await _taskRepository.FindAll();
+        var users = await _userRepository.FindAll();
+
+        var userTask = from task in tasks
+                       join user in users on task.UserId equals user.Id
+                       where task.UserId == userId
+                       select new
+                       {
+                           task.Id,
+                           task.Title,
+                           CreateBy = new
+                           {
+                               user.Id,
+                               user.Name,
+                               user.ProfileImage
+                           },
+                           Assignee = (from nestedTasks in tasks
+                                      join nestedUser in users on task.UserId equals user.Id
+                                      where task.AssigneeTo == nestedUser.Id
+                                      select new
+                                      {
+                                          nestedUser.Id,
+                                          nestedUser.Name,
+                                          user.ProfileImage
+                                      }).FirstOrDefault(),
+                           //    Assignee = new
+                           //    {
+                           //        user.Id,
+                           //        user.Name,
+                           //        user.ProfileImage
+                           //    },
+                           task.Description,
+                           task.Priority,
+                           task.Status,
+                           task.MilestoneId,
+                           task.StartDate,
+                           task.DueDate
+                       };
+        return userTask;
     }
 }

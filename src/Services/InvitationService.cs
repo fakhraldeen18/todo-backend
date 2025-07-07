@@ -1,5 +1,6 @@
 using AutoMapper;
 using Harkh_app_production.src.Abstractions;
+using Harkh_app_production.src.Utils;
 using Harkh_backend.src.Abstractions;
 using Harkh_backend.src.DTOs;
 using Harkh_backend.src.Entities;
@@ -14,14 +15,16 @@ public class InvitationService : IInvitationService
     private readonly IMapper _mapper;
     private readonly IEmailSenderService _emailSenderService;
     private readonly IUserService _userService;
+    private readonly IUserProjectService _userProjectRepository;
 
-    public InvitationService(IMapper mapper, IUnitOfWork unitOfWork, IEmailSenderService emailSenderService, IUserService userService)
+    public InvitationService(IMapper mapper, IUnitOfWork unitOfWork, IEmailSenderService emailSenderService, IUserService userService, IUserProjectService userProjectRepository)
     {
         _unitOfWork = unitOfWork;
         _invitationRepository = _unitOfWork.Invitations;
         _mapper = mapper;
         _emailSenderService = emailSenderService;
         _userService = userService;
+        _userProjectRepository = userProjectRepository;
     }
 
     public async Task<InvitationReadeDto?> CreateOne(InvitationDto newInvitation)
@@ -55,10 +58,34 @@ public class InvitationService : IInvitationService
     public async Task<bool> ProcessInvitationAsync(InvitationDto Invitation)
     {
 
-        // Save to database
-        await CreateOne(Invitation);
+        var users = await _userService.FindAll();
+        if (string.IsNullOrWhiteSpace(Invitation.ToEmail))
+        {
+            throw CustomException.BadRequest("Email is required");
+        }
+        if (users.Any(u => u.Email.Equals(Invitation.ToEmail, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw CustomException.BadRequest("Email already register please try another one");
+        }
 
-        await _userService.CreateInviteUser(Invitation.ToEmail);
+        var newUser = await _userService.CreateInviteUser(Invitation.ToEmail);
+        // string guidString = Invitation.ProjectLink.Split('/').Last();
+        // Guid invitationGuid;
+        // if (!Guid.TryParse(guidString, out invitationGuid))
+        // {
+        //     throw new ArgumentException("Invalid invitation link format");
+        // }
+        var newProjectUser = new UsersProjectsCreateDto
+        {
+            ProjectId = Invitation.ProjectId,
+            UserId = newUser!.Id
+        };
+        await _userProjectRepository.CreateOne(newProjectUser);
+
+        // Save to database
+        Invitation.ProjectLink = $"http://localhost:3000/invitation/{newUser.Id}";
+        await CreateOne(Invitation);
+        
         // Send email
         var emailRequest = new EmailSender
         {

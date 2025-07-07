@@ -44,6 +44,7 @@ public class EducationService : IEducationService
                                 where user.Id == userId
                                 select new
                                 {
+                                    education.Id,
                                     userName = user.Name,
                                     school = education.School,
                                     degree = education.Degree,

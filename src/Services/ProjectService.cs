@@ -15,9 +15,11 @@ public class ProjectService : IProjectService
     private readonly IMilestoneRepository _milestoneRepository;
     private readonly IBaseRepository<Document> _documentRepository;
     private readonly IBaseRepository<UserProject> _userProjectRepository;
+    private readonly IBaseRepository<User> _userRepository;
+    private readonly IUserProjectService _userProjectService;
 
 
-    public ProjectService(IMapper mapper, IProjectRepository projectRepository, IUnitOfWork unitOfWork, IMilestoneRepository milestoneRepository)
+    public ProjectService(IMapper mapper, IProjectRepository projectRepository, IUnitOfWork unitOfWork, IMilestoneRepository milestoneRepository, IUserProjectService userProjectService)
     {
         _projectRepository = projectRepository;
         _mapper = mapper;
@@ -25,25 +27,101 @@ public class ProjectService : IProjectService
         _milestoneRepository = milestoneRepository;
         _documentRepository = _unitOfWork.Documents;
         _userProjectRepository = _unitOfWork.UserProjects;
+        _userRepository = _unitOfWork.Users;
+        _userProjectService = userProjectService;
     }
 
-    public async Task<ProjectReadDto?> CreateOne(ProjectCreateDto newProject)
+    // public async Task<ProjectReadDto?> CreateOne(ProjectCreateDto newProject)
+    // {
+    //     Project? project = _mapper.Map<Project>(newProject);
+    //     if (project == null) return null;
+    //     await _unitOfWork.BeginTransaction();
+    //     try
+    //     {
+    //         var createdProject = await _projectRepository.CreateOne(project);
+    //         var newProjectUser = new UsersProjectsCreateDto
+    //         {
+    //             ProjectId = createdProject.Id,
+    //             UserId = createdProject.UserId
+    //         };
+    //         var userProject = _mapper.Map<UserProject>(newProjectUser);
+    //         await _userProjectRepository.CreateOne(userProject);
+    //         await _unitOfWork.Complete();
+    //         await _unitOfWork.CommitTransaction();
+    //         return _mapper.Map<ProjectReadDto>(project);
+    //     }
+    //     catch (Exception)
+    //     {
+    //         await _unitOfWork.RollbackTransaction();
+    //         return null;
+    //     }
+    // }
+    public async Task<IEnumerable?> CreateOneProject(ProjectCreateDto newProject)
     {
         Project? project = _mapper.Map<Project>(newProject);
         if (project == null) return null;
         await _unitOfWork.BeginTransaction();
         try
         {
+            project.ManagerId = project.UserId;
             var createdProject = await _projectRepository.CreateOne(project);
-            var newProjectUser = new UserProject
+            var newProjectUser = new UsersProjectsCreateDto
             {
                 ProjectId = createdProject.Id,
                 UserId = createdProject.UserId
             };
-            await _userProjectRepository.CreateOne(newProjectUser);
+            var userProject = _mapper.Map<UserProject>(newProjectUser);
+            await _userProjectRepository.CreateOne(userProject);
+
+            // if (newProject.ManagerId != null)
+            // {
+            //     var newManagerProject = new UsersProjectsCreateDto
+            //     {
+            //         ProjectId = createdProject.Id,
+            //         UserId = newProject.ManagerId.Value
+            //     };
+            //     var managerProject = _mapper.Map<UserProject>(newManagerProject);
+            //     await _userProjectRepository.CreateOne(managerProject);
+            // }
+
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
-            return _mapper.Map<ProjectReadDto>(project);
+            var projects = await _projectRepository.FindAll();
+            var users = await _userRepository.FindAll();
+            var finalProject = (from selectedProject in projects
+                                where selectedProject.Id == createdProject.Id
+                                select new
+                                {
+                                    selectedProject.Id,
+                                    Owner = (from user in users
+                                             where user.Id == selectedProject.UserId
+                                             select new
+                                             {
+                                                 user.Id,
+                                                 user.Name,
+                                                 user.Email,
+                                                 user.ProfileImage
+                                             }).FirstOrDefault(),
+                                    Manager = (from user in users
+                                               where user.Id == selectedProject.ManagerId
+                                               select new
+                                               {
+                                                   user.Id,
+                                                   user.Name,
+                                                   user.Email,
+                                                   user.ProfileImage
+                                               }).FirstOrDefault(),
+                                    selectedProject.Avatar,
+                                    selectedProject.Name,
+                                    selectedProject.Progress,
+                                    selectedProject.Description,
+                                    selectedProject.StartDate,
+                                    selectedProject.DueDate,
+                                    selectedProject.Status,
+                                    selectedProject.CreateAt,
+                                    selectedProject.UpdateAt
+                                });
+            return finalProject;
         }
         catch (Exception)
         {
@@ -106,15 +184,29 @@ public class ProjectService : IProjectService
         await _unitOfWork.BeginTransaction();
         try
         {
-            project.UserId = updatedProject.UserId;
+            //project.UserId = updatedProject.UserId;
+            project.ManagerId = updatedProject.ManagerId;
+            project.Avatar = updatedProject.Avatar;
             project.Name = updatedProject.Name;
             project.Progress = updatedProject.Progress;
             project.Description = updatedProject.Description;
             project.StartDate = updatedProject.StartDate;
-            project.EndDate = updatedProject.EndDate;
+            project.DueDate = updatedProject.DueDate;
             project.Status = updatedProject.Status;
             project.UpdateAt = updatedProject.UpdateAt;
             _projectRepository.UpdateOne(project);
+
+            var findManager = await _userProjectService.FindManager(id, updatedProject.ManagerId);
+            if (updatedProject.ManagerId != null && findManager == false)
+            {
+                var newManagerProject = new UsersProjectsCreateDto
+                {
+                    ProjectId = project.Id,
+                    UserId = updatedProject.ManagerId.Value
+                };
+                var managerProject = _mapper.Map<UserProject>(newManagerProject);
+                await _userProjectRepository.CreateOne(managerProject);
+            }
             await _unitOfWork.Complete();
             await _unitOfWork.CommitTransaction();
             return _mapper.Map<ProjectReadDto>(project);
@@ -179,6 +271,7 @@ public class ProjectService : IProjectService
                                 where project.Id == id
                                 select new ProjectJoinMilestoneDto
                                 {
+                                    Id = milestone.Id,
                                     Name = milestone.Name,
                                     Description = milestone.Description,
                                     Progress = milestone.Progress,
